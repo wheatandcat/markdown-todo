@@ -117,12 +117,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         matches.push(match);
       }
       
+      // Get existing tasks to avoid duplicates
+      const existingTasks = await storage.getTasks();
+      const existingTexts = new Set(existingTasks.map(t => t.text));
+      
       const tasks = [];
       for (const match of matches) {
         const text = match[2].trim();
         const completed = match[1] === 'x';
-        const now = Date.now();
         
+        // Skip if task already exists
+        if (existingTexts.has(text)) {
+          const existingTask = existingTasks.find(t => t.text === text);
+          if (existingTask) {
+            // Update existing task if status changed
+            if (existingTask.completed !== completed) {
+              const updatedTask = await storage.updateTask(existingTask.id, {
+                completed,
+                checkedAt: completed ? Date.now() : null,
+              });
+              if (updatedTask) tasks.push(updatedTask);
+            } else {
+              tasks.push(existingTask);
+            }
+          }
+          continue;
+        }
+        
+        const now = Date.now();
         const task = await storage.createTask({
           text,
           completed,

@@ -12,9 +12,10 @@ import type { Task } from "@shared/schema";
 
 interface TaskPreviewProps {
   content: string;
+  onMarkdownUpdate: (content: string) => void;
 }
 
-export function TaskPreview({ content }: TaskPreviewProps) {
+export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   const [parsedContent, setParsedContent] = useState<any[]>([]);
   const { activeTasks, completedTasks, updateTask } = useTasks();
   const { getTimerProgress } = useTimers();
@@ -39,7 +40,26 @@ export function TaskPreview({ content }: TaskPreviewProps) {
         completed: checked,
         checkedAt: checked ? Date.now() : null,
       });
+      
+      // Update markdown content to reflect the change
+      updateMarkdownContent(taskText, checked);
     }
+  };
+
+  const updateMarkdownContent = (taskText: string, checked: boolean) => {
+    const lines = content.split('\n');
+    const updatedLines = lines.map(line => {
+      const taskMatch = line.match(/^(\s*-\s*)\[([x\s])\](\s*)(.+)$/);
+      if (taskMatch && taskMatch[4].trim() === taskText) {
+        const indent = taskMatch[1];
+        const spacing = taskMatch[3];
+        const checkbox = checked ? 'x' : ' ';
+        return `${indent}[${checkbox}]${spacing}${taskText}`;
+      }
+      return line;
+    });
+    
+    onMarkdownUpdate(updatedLines.join('\n'));
   };
 
   const refreshPreview = () => {

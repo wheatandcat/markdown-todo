@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { TaskPreview } from "@/components/task-preview";
@@ -31,6 +31,7 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toast } = useToast();
   const { syncMarkdownTasks } = useTasks();
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSave = () => {
     localStorage.setItem("markdownContent", markdownContent);
@@ -56,7 +57,13 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
 
   const handleMarkdownChange = (content: string) => {
     setMarkdownContent(content);
-    syncMarkdownTasks.mutate(content);
+    // Debounce the sync to avoid multiple API calls
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+    syncTimeoutRef.current = setTimeout(() => {
+      syncMarkdownTasks.mutate(content);
+    }, 1000);
   };
 
   const insertTaskTemplate = () => {
@@ -122,7 +129,10 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
             onChange={handleMarkdownChange}
             onInsertTemplate={insertTaskTemplate}
           />
-          <TaskPreview content={markdownContent} />
+          <TaskPreview 
+            content={markdownContent} 
+            onMarkdownUpdate={setMarkdownContent}
+          />
         </main>
       </div>
 
