@@ -52,10 +52,7 @@ export function Sidebar({ activeTab = "active", onTabChange }: SidebarProps = {}
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  // Debug logging
-  console.log("Active tasks data:", activeTasks.data);
-  console.log("Completed tasks data:", completedTasks.data);
-  console.log("Timer tasks data:", timerTasks.data);
+
 
   const navItems = [
     {
