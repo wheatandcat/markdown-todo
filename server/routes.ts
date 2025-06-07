@@ -139,5 +139,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Auto-complete timer tasks
+  setInterval(async () => {
+    try {
+      const timerTasks = await storage.getTimerTasks();
+      const now = Date.now();
+      const TIMER_DURATION = 60 * 60 * 1000; // 1 hour
+      
+      for (const task of timerTasks) {
+        if (task.checkedAt && !task.completedAt) {
+          const timeElapsed = now - task.checkedAt;
+          if (timeElapsed >= TIMER_DURATION) {
+            await storage.updateTask(task.id, {
+              completedAt: now,
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Timer check error:', error);
+    }
+  }, 30000); // Check every 30 seconds
+  
   return httpServer;
 }

@@ -16,7 +16,7 @@ interface TaskPreviewProps {
 
 export function TaskPreview({ content }: TaskPreviewProps) {
   const [parsedContent, setParsedContent] = useState<any[]>([]);
-  const { activeTasks, createTask } = useTasks();
+  const { activeTasks, completedTasks, updateTask } = useTasks();
   const { getTimerProgress } = useTimers();
 
   useEffect(() => {
@@ -24,20 +24,20 @@ export function TaskPreview({ content }: TaskPreviewProps) {
     setParsedContent(parsed);
   }, [content]);
 
+  const findTaskByText = (text: string): Task | undefined => {
+    const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
+    return allTasks.find(task => task.text === text);
+  };
+
   const handleTaskToggle = async (taskText: string, checked: boolean) => {
-    // Find existing task by text content
-    const existingTask = activeTasks.data?.find(task => task.text === taskText);
+    const existingTask = findTaskByText(taskText);
     
     if (existingTask) {
-      // This would require updateTask mutation, but we need to handle this differently
-      // For now, we'll just create a new task since the current design doesn't support direct updates
-      console.log("Task toggle not implemented for existing tasks");
-    } else if (checked) {
-      // Create new task when checked
-      await createTask.mutateAsync({
-        text: taskText,
-        completed: true,
-        checkedAt: Date.now(),
+      // Update existing task
+      await updateTask.mutateAsync({
+        id: existingTask.id,
+        completed: checked,
+        checkedAt: checked ? Date.now() : null,
       });
     }
   };
@@ -67,9 +67,10 @@ export function TaskPreview({ content }: TaskPreviewProps) {
     }
 
     if (item.type === "task") {
-      const timerProgress = getTimerProgress(item.id);
-      const isCompleted = item.completed;
-      const hasTimer = isCompleted && timerProgress !== null;
+      const existingTask = findTaskByText(item.text);
+      const actualCompleted = existingTask ? existingTask.completed : item.completed;
+      const timerProgress = existingTask ? getTimerProgress(existingTask.id) : null;
+      const hasTimer = actualCompleted && timerProgress !== null;
 
       return (
         <Card
@@ -77,23 +78,23 @@ export function TaskPreview({ content }: TaskPreviewProps) {
           className={`task-item mb-3 p-3 shadow-sm transition-all hover:shadow-md ${
             hasTimer
               ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
-              : isCompleted
+              : actualCompleted
               ? "task-completed"
               : ""
           }`}
         >
           <label className="flex items-start space-x-3 cursor-pointer">
             <Checkbox
-              checked={isCompleted}
+              checked={actualCompleted}
               onCheckedChange={(checked) =>
-                handleTaskToggle(item.id, checked as boolean)
+                handleTaskToggle(item.text, checked as boolean)
               }
               className="mt-0.5"
             />
             <div className="flex-1">
               <span
                 className={`text-sm ${
-                  isCompleted ? "line-through text-muted-foreground" : ""
+                  actualCompleted ? "line-through text-muted-foreground" : ""
                 }`}
               >
                 {item.text}
@@ -108,7 +109,7 @@ export function TaskPreview({ content }: TaskPreviewProps) {
                   </div>
                   <Badge variant="outline" className="text-xs">
                     <Clock className="w-3 h-3 mr-1" />
-                    {Math.ceil((60 - timerProgress * 0.6))}分後に完了
+                    {Math.ceil(60 - (timerProgress || 0) * 0.6)}分後に完了
                   </Badge>
                 </div>
               )}
