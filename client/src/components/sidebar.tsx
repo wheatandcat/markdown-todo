@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTasks } from "@/hooks/use-tasks";
 import { useTimers } from "@/hooks/use-timers";
 import { useTheme } from "@/components/theme-provider";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle,
   List,
@@ -16,9 +17,21 @@ import {
 
 export function Sidebar() {
   const [activeTab, setActiveTab] = useState("active");
+  const queryClient = useQueryClient();
   const { activeTasks, completedTasks } = useTasks();
   const { timerTasks } = useTimers();
   const { theme, setTheme } = useTheme();
+
+  // Refresh counts every 5 seconds to ensure accuracy
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/active"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/completed"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [queryClient]);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");

@@ -21,6 +21,9 @@ export function useTasks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/active"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/completed"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
     },
   });
 
@@ -31,6 +34,9 @@ export function useTasks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/active"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/completed"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
     },
   });
 
@@ -40,6 +46,9 @@ export function useTasks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/active"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/completed"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
     },
   });
 
@@ -52,6 +61,9 @@ export function useTasks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/active"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/completed"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
     },
   });
 
