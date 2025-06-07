@@ -35,6 +35,24 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
     setLocalTaskStates(newLocalStates);
   }, [content]);
 
+  // Sync local states with database when tasks data loads
+  useEffect(() => {
+    if (activeTasks.data || completedTasks.data) {
+      const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
+      
+      setLocalTaskStates(prev => {
+        const updated = { ...prev };
+        
+        // Update states based on actual database data
+        allTasks.forEach(task => {
+          updated[task.text] = task.completed;
+        });
+        
+        return updated;
+      });
+    }
+  }, [activeTasks.data, completedTasks.data]);
+
   const findTaskByText = (text: string): Task | undefined => {
     const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
     return allTasks.find(task => task.text === text);
@@ -107,7 +125,7 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
       const localCompleted = localTaskStates[item.text];
       const actualCompleted = localCompleted !== undefined ? localCompleted : (existingTask ? existingTask.completed : item.completed);
       const timerProgress = existingTask ? getTimerProgress(existingTask.id) : null;
-      const hasTimer = actualCompleted && timerProgress !== null;
+      const hasTimer = timerProgress !== null;
 
       return (
         <Card
