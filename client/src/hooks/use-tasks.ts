@@ -12,8 +12,8 @@ export function useTasks() {
   const handleUnauthorizedError = (error: Error) => {
     if (isUnauthorizedError(error)) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "認証エラー",
+        description: "ログアウトされました。再度ログインします...",
         variant: "destructive",
       });
       setTimeout(() => {

@@ -9,17 +9,17 @@ export default function Landing() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-slate-100 mb-6">
-            Smart Task Management
+            スマートタスク管理
           </h1>
           <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
-            Transform your productivity with markdown-powered tasks that auto-complete after one hour
+            Markdownで作成したタスクが1時間後に自動完了する、生産性を向上させるタスク管理システム
           </p>
           <Button 
             size="lg" 
             className="px-8 py-4 text-lg"
             onClick={() => window.location.href = '/api/login'}
           >
-            Get Started
+            はじめる
           </Button>
         </div>
 
@@ -28,11 +28,11 @@ export default function Landing() {
           <Card className="text-center">
             <CardHeader>
               <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
-              <CardTitle>Markdown Tasks</CardTitle>
+              <CardTitle>Markdownタスク</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Create tasks using simple checkbox syntax in markdown
+                Markdownのチェックボックス記法でタスクを簡単作成
               </CardDescription>
             </CardContent>
           </Card>
@@ -40,11 +40,11 @@ export default function Landing() {
           <Card className="text-center">
             <CardHeader>
               <Clock className="h-12 w-12 mx-auto text-blue-500 mb-4" />
-              <CardTitle>Auto-Complete</CardTitle>
+              <CardTitle>自動完了</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Tasks automatically complete after 1 hour when checked
+                チェックしたタスクは1時間後に自動で完了扱いになります
               </CardDescription>
             </CardContent>
           </Card>
@@ -52,11 +52,11 @@ export default function Landing() {
           <Card className="text-center">
             <CardHeader>
               <BarChart3 className="h-12 w-12 mx-auto text-purple-500 mb-4" />
-              <CardTitle>Progress Tracking</CardTitle>
+              <CardTitle>進捗追跡</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Monitor your productivity with detailed statistics
+                詳細な統計情報で生産性を可視化して管理
               </CardDescription>
             </CardContent>
           </Card>
@@ -64,11 +64,11 @@ export default function Landing() {
           <Card className="text-center">
             <CardHeader>
               <Zap className="h-12 w-12 mx-auto text-orange-500 mb-4" />
-              <CardTitle>Real-time Sync</CardTitle>
+              <CardTitle>リアルタイム同期</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Your tasks sync instantly across all your devices
+                すべてのデバイスでタスクが即座に同期されます
               </CardDescription>
             </CardContent>
           </Card>
@@ -77,38 +77,38 @@ export default function Landing() {
         {/* Demo Section */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-8 mb-16">
           <h2 className="text-2xl font-bold text-center mb-8 text-slate-900 dark:text-slate-100">
-            How It Works
+            使い方
           </h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
-                Write tasks in markdown:
+                Markdownでタスクを記述：
               </h3>
               <div className="bg-slate-100 dark:bg-slate-700 p-4 rounded font-mono text-sm">
                 <div className="text-slate-700 dark:text-slate-300">
-                  - [ ] Review project proposal<br/>
-                  - [x] Complete morning workout<br/>
-                  - [ ] Send follow-up emails<br/>
-                  - [ ] Plan weekend activities
+                  - [ ] プロジェクト提案書をレビュー<br/>
+                  - [x] 朝の運動を完了<br/>
+                  - [ ] フォローアップメールを送信<br/>
+                  - [ ] 週末の予定を計画
                 </div>
               </div>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
-                Track progress automatically:
+                進捗を自動追跡：
               </h3>
               <ul className="space-y-2">
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                  Check tasks to start timer
+                  タスクをチェックしてタイマー開始
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                  Auto-complete after 1 hour
+                  1時間後に自動完了
                 </li>
                 <li className="flex items-center text-slate-700 dark:text-slate-300">
                   <BarChart3 className="h-4 w-4 mr-2 text-purple-500" />
-                  View detailed statistics
+                  詳細な統計情報を表示
                 </li>
               </ul>
             </div>
@@ -118,17 +118,17 @@ export default function Landing() {
         {/* CTA */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-            Ready to boost your productivity?
+            生産性を向上させる準備はできましたか？
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-300 mb-8">
-            Join thousands of users who have transformed their task management
+            タスク管理を変革した数千人のユーザーに参加しませんか
           </p>
           <Button 
             size="lg" 
             className="px-8 py-4 text-lg"
             onClick={() => window.location.href = '/api/login'}
           >
-            Start Managing Tasks
+            タスク管理を始める
           </Button>
         </div>
       </div>
