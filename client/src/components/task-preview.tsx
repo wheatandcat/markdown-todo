@@ -220,8 +220,8 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   const taskCount = parsedContent.filter((item) => item.type === "task").length;
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex items-center justify-between px-3 md:px-6 py-3 bg-muted border-b border-border">
+    <div className="flex-1 flex flex-col h-full">
+      <div className="flex items-center justify-between px-3 md:px-6 py-3 bg-muted border-b border-border flex-shrink-0">
         <h3 className="text-sm font-medium text-muted-foreground">プレビュー</h3>
         <div className="flex items-center space-x-2">
           <Badge variant="secondary" className="text-xs">
@@ -238,7 +238,7 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
         </div>
       </div>
 
-      <div className="flex-1 p-3 md:p-6 overflow-y-auto">
+      <div className="flex-1 p-3 md:p-6 overflow-y-auto min-h-0">
         <div className="markdown-content space-y-2">
           {parsedContent.map(renderContent)}
         </div>

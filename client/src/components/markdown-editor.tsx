@@ -19,8 +19,8 @@ export function MarkdownEditor({
   onInsertTemplate,
 }: MarkdownEditorProps) {
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex items-center justify-between px-3 md:px-6 py-3 bg-muted border-b border-border">
+    <div className="flex-1 flex flex-col h-full">
+      <div className="flex items-center justify-between px-3 md:px-6 py-3 bg-muted border-b border-border flex-shrink-0">
         <h3 className="text-sm font-medium text-muted-foreground">
           Markdownエディター
         </h3>
@@ -54,7 +54,7 @@ export function MarkdownEditor({
         </div>
       </div>
 
-      <div className="flex-1 p-3 md:p-6">
+      <div className="flex-1 relative overflow-hidden">
         <Textarea
           value={content}
           onChange={(e) => onChange(e.target.value)}
@@ -64,7 +64,7 @@ export function MarkdownEditor({
 - [ ] 新しいタスク
 - [x] 完了済みタスク
 - [ ] もう一つのタスク`}
-          className="w-full h-full resize-none font-mono text-sm min-h-0"
+          className="absolute inset-3 md:inset-6 w-auto h-auto resize-none font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent overflow-auto"
         />
       </div>
     </div>
