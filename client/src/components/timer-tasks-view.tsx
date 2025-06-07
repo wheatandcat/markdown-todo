@@ -1,15 +1,25 @@
 import { useTimers } from "@/hooks/use-timers";
+import { useTasks } from "@/hooks/use-tasks";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Timer } from "lucide-react";
+import { Clock, Timer, CheckCircle } from "lucide-react";
 
 export function TimerTasksView() {
   const { timerTasks, getTimerProgress, getRemainingTime } = useTimers();
+  const { updateTask } = useTasks();
 
   const formatTime = (milliseconds: number): string => {
     const minutes = Math.floor(milliseconds / (1000 * 60));
     const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleCompleteTask = async (taskId: number) => {
+    await updateTask.mutateAsync({
+      id: taskId,
+      completedAt: Date.now(),
+    });
   };
 
   if (timerTasks.isLoading) {
@@ -59,9 +69,21 @@ export function TimerTasksView() {
                     <span className="flex-1 text-gray-900 dark:text-gray-100">
                       {task.text}
                     </span>
-                    <span className="text-sm font-mono text-amber-700 dark:text-amber-300">
-                      残り {formatTime(remaining)}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-mono text-amber-700 dark:text-amber-300">
+                        残り {formatTime(remaining)}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleCompleteTask(task.id)}
+                        disabled={updateTask.isPending}
+                        className="h-7 px-2 text-xs bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300"
+                      >
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        完了
+                      </Button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Progress 
