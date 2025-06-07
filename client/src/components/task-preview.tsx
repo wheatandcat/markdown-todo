@@ -23,7 +23,41 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   useEffect(() => {
     const parsed = parseMarkdownTasks(content);
     setParsedContent(parsed);
-  }, [content]);
+    
+    // Update markdown content to reflect timer states
+    updateMarkdownForTimerStates();
+  }, [content, activeTasks.data, completedTasks.data]);
+
+  const updateMarkdownForTimerStates = () => {
+    if (!activeTasks.data && !completedTasks.data) return;
+    
+    const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
+    const lines = content.split('\n');
+    let hasChanges = false;
+    
+    const updatedLines = lines.map(line => {
+      const taskMatch = line.match(/^(\s*-\s*)\[([x\s])\](\s*)(.+)$/);
+      if (taskMatch) {
+        const taskText = taskMatch[4].trim();
+        const existingTask = allTasks.find(task => task.text === taskText);
+        const timerProgress = existingTask ? getTimerProgress(existingTask.id) : null;
+        const hasTimer = timerProgress !== null;
+        
+        if (hasTimer && taskMatch[2] !== 'x') {
+          // Task has timer but markdown shows unchecked - update it
+          hasChanges = true;
+          const indent = taskMatch[1];
+          const spacing = taskMatch[3];
+          return `${indent}[x]${spacing}${taskText}`;
+        }
+      }
+      return line;
+    });
+    
+    if (hasChanges) {
+      onMarkdownUpdate(updatedLines.join('\n'));
+    }
+  };
 
   const findTaskByText = (text: string): Task | undefined => {
     const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
@@ -88,9 +122,10 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
 
     if (item.type === "task") {
       const existingTask = findTaskByText(item.text);
-      const actualCompleted = existingTask ? existingTask.completed : item.completed;
       const timerProgress = existingTask ? getTimerProgress(existingTask.id) : null;
       const hasTimer = timerProgress !== null;
+      // If task has a timer, it should be shown as completed regardless of markdown state
+      const actualCompleted = hasTimer ? true : (existingTask ? existingTask.completed : item.completed);
 
       return (
         <Card
