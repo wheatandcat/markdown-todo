@@ -102,14 +102,14 @@ export function StatsView() {
   }
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
+    <div className="flex-1 p-3 md:p-6 overflow-auto">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 md:mb-6">
           統計情報
         </h2>
         
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (

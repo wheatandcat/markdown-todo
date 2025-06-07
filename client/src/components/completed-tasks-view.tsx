@@ -34,9 +34,9 @@ export function CompletedTasksView() {
   }
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
+    <div className="flex-1 p-3 md:p-6 overflow-auto">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 md:mb-6">
           完了済みタスク
         </h2>
         <div className="space-y-4">

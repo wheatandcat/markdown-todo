@@ -112,43 +112,59 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
               </h2>
             </div>
 
-            <div className="flex items-center space-x-3">
-              <Button variant="outline" size="sm" onClick={handleSave}>
+            <div className="flex items-center space-x-2 md:space-x-3">
+              <Button variant="outline" size="sm" onClick={handleSave} className="hidden sm:flex">
                 <Save className="w-4 h-4 mr-2" />
                 保存
               </Button>
+              <Button variant="outline" size="icon" onClick={handleSave} className="sm:hidden">
+                <Save className="w-4 h-4" />
+              </Button>
 
-              <Button variant="outline" size="sm" onClick={handleExport}>
+              <Button variant="outline" size="sm" onClick={handleExport} className="hidden sm:flex">
                 <Download className="w-4 h-4 mr-2" />
                 エクスポート
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleExport} className="sm:hidden">
+                <Download className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </header>
 
         {/* Content Container */}
-        <main className="flex-1 flex overflow-hidden">
+        <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {activeTab === "active" && (
             <>
-              <MarkdownEditor
-                content={markdownContent}
-                onChange={handleMarkdownChange}
-                onInsertTemplate={insertTaskTemplate}
-              />
-              <TaskPreview 
-                content={markdownContent} 
-                onMarkdownUpdate={setMarkdownContent}
-              />
+              <div className="flex-1 min-h-0 md:min-h-full">
+                <MarkdownEditor
+                  content={markdownContent}
+                  onChange={handleMarkdownChange}
+                  onInsertTemplate={insertTaskTemplate}
+                />
+              </div>
+              <div className="flex-1 min-h-0 md:min-h-full border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700">
+                <TaskPreview 
+                  content={markdownContent} 
+                  onMarkdownUpdate={setMarkdownContent}
+                />
+              </div>
             </>
           )}
           {activeTab === "completed" && (
-            <CompletedTasksView />
+            <div className="flex-1 min-h-0">
+              <CompletedTasksView />
+            </div>
           )}
           {activeTab === "timers" && (
-            <TimerTasksView />
+            <div className="flex-1 min-h-0">
+              <TimerTasksView />
+            </div>
           )}
           {activeTab === "stats" && (
-            <StatsView />
+            <div className="flex-1 min-h-0">
+              <StatsView />
+            </div>
           )}
         </main>
       </div>

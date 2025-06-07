@@ -20,7 +20,7 @@ export function MarkdownEditor({
 }: MarkdownEditorProps) {
   return (
     <div className="flex-1 flex flex-col">
-      <div className="flex items-center justify-between px-6 py-3 bg-muted border-b border-border">
+      <div className="flex items-center justify-between px-3 md:px-6 py-3 bg-muted border-b border-border">
         <h3 className="text-sm font-medium text-muted-foreground">
           Markdownエディター
         </h3>
@@ -54,7 +54,7 @@ export function MarkdownEditor({
         </div>
       </div>
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-3 md:p-6">
         <Textarea
           value={content}
           onChange={(e) => onChange(e.target.value)}
