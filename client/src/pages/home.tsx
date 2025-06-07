@@ -9,7 +9,8 @@ import { StatsView } from "@/components/stats-view";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useTasks } from "@/hooks/use-tasks";
-import { Menu, Plus, Save, Download } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Menu, Plus, Save, Download, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function Home() {
@@ -34,8 +35,13 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
   const { toast } = useToast();
+  const { user } = useAuth();
   const { syncMarkdownTasks } = useTasks();
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLogout = () => {
+    window.location.href = '/api/logout';
+  };
 
   const handleSave = () => {
     localStorage.setItem("markdownContent", markdownContent);
@@ -127,6 +133,14 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
               </Button>
               <Button variant="outline" size="icon" onClick={handleExport} className="sm:hidden">
                 <Download className="w-4 h-4" />
+              </Button>
+
+              <Button variant="outline" size="sm" onClick={handleLogout} className="hidden sm:flex">
+                <LogOut className="w-4 h-4 mr-2" />
+                ログアウト
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleLogout} className="sm:hidden">
+                <LogOut className="w-4 h-4" />
               </Button>
             </div>
           </div>
