@@ -17,12 +17,22 @@ interface TaskPreviewProps {
 
 export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   const [parsedContent, setParsedContent] = useState<any[]>([]);
+  const [localTaskStates, setLocalTaskStates] = useState<Record<string, boolean>>({});
   const { activeTasks, completedTasks, updateTask } = useTasks();
   const { getTimerProgress } = useTimers();
 
   useEffect(() => {
     const parsed = parseMarkdownTasks(content);
     setParsedContent(parsed);
+    
+    // Initialize local states from parsed content
+    const newLocalStates: Record<string, boolean> = {};
+    parsed.forEach(item => {
+      if (item.type === 'task') {
+        newLocalStates[item.text] = item.completed || false;
+      }
+    });
+    setLocalTaskStates(newLocalStates);
   }, [content]);
 
   const findTaskByText = (text: string): Task | undefined => {
@@ -33,16 +43,22 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   const handleTaskToggle = async (taskText: string, checked: boolean) => {
     const existingTask = findTaskByText(taskText);
     
+    // Update local state immediately for responsive UI
+    setLocalTaskStates(prev => ({
+      ...prev,
+      [taskText]: checked
+    }));
+    
+    // Update markdown content
+    updateMarkdownContent(taskText, checked);
+    
     if (existingTask) {
-      // Update existing task
+      // Update existing task in database
       await updateTask.mutateAsync({
         id: existingTask.id,
         completed: checked,
         checkedAt: checked ? Date.now() : null,
       });
-      
-      // Update markdown content to reflect the change
-      updateMarkdownContent(taskText, checked);
     }
   };
 
@@ -88,7 +104,8 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
 
     if (item.type === "task") {
       const existingTask = findTaskByText(item.text);
-      const actualCompleted = existingTask ? existingTask.completed : item.completed;
+      const localCompleted = localTaskStates[item.text];
+      const actualCompleted = localCompleted !== undefined ? localCompleted : (existingTask ? existingTask.completed : item.completed);
       const timerProgress = existingTask ? getTimerProgress(existingTask.id) : null;
       const hasTimer = actualCompleted && timerProgress !== null;
 
