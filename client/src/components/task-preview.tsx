@@ -17,7 +17,7 @@ interface TaskPreviewProps {
 
 export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   const [parsedContent, setParsedContent] = useState<any[]>([]);
-  const { activeTasks, completedTasks, updateTask } = useTasks();
+  const { activeTasks, completedTasks, updateTask, createTask } = useTasks();
   const { getTimerProgress } = useTimers();
 
   useEffect(() => {
@@ -60,22 +60,34 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   };
 
   const findTaskByText = (text: string): Task | undefined => {
-    const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
-    return allTasks.find(task => task.text === text);
+    // First check active tasks, then completed tasks
+    const activeTask = (activeTasks.data || []).find(task => task.text === text);
+    if (activeTask) return activeTask;
+    
+    const completedTask = (completedTasks.data || []).find(task => task.text === text);
+    return completedTask;
   };
 
   const handleTaskToggle = async (taskText: string, checked: boolean) => {
     const existingTask = findTaskByText(taskText);
+    const activeTask = (activeTasks.data || []).find(task => task.text === taskText);
     
     // Update markdown content immediately
     updateMarkdownContent(taskText, checked);
     
-    if (existingTask) {
-      // Update existing task in database
+    if (activeTask) {
+      // Update existing active task
       await updateTask.mutateAsync({
-        id: existingTask.id,
+        id: activeTask.id,
         completed: checked,
         checkedAt: checked ? Date.now() : null,
+      });
+    } else if (checked) {
+      // Create new task if checking and no active task exists
+      await createTask.mutateAsync({
+        text: taskText,
+        completed: checked,
+        checkedAt: Date.now(),
       });
     }
   };
