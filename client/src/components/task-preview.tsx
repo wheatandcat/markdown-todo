@@ -17,6 +17,7 @@ interface TaskPreviewProps {
 
 export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   const [parsedContent, setParsedContent] = useState<any[]>([]);
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Record<string, boolean>>({});
   const { activeTasks, completedTasks, updateTask, createTask } = useTasks();
   const { getTimerProgress } = useTimers();
 
@@ -69,26 +70,67 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   };
 
   const handleTaskToggle = async (taskText: string, checked: boolean) => {
-    const existingTask = findTaskByText(taskText);
-    const activeTask = (activeTasks.data || []).find(task => task.text === taskText);
+    // Immediate UI feedback with optimistic update
+    setOptimisticUpdates(prev => ({
+      ...prev,
+      [taskText]: checked
+    }));
     
     // Update markdown content immediately
     updateMarkdownContent(taskText, checked);
     
-    if (activeTask) {
-      // Update existing active task
-      await updateTask.mutateAsync({
-        id: activeTask.id,
-        completed: checked,
-        checkedAt: checked ? Date.now() : null,
+    // Background database operations
+    try {
+      const activeTask = (activeTasks.data || []).find(task => task.text === taskText);
+      
+      if (activeTask) {
+        // Update existing active task
+        updateTask.mutate({
+          id: activeTask.id,
+          completed: checked,
+          checkedAt: checked ? Date.now() : null,
+        }, {
+          onSettled: () => {
+            // Clear optimistic update after database operation
+            setOptimisticUpdates(prev => {
+              const updated = { ...prev };
+              delete updated[taskText];
+              return updated;
+            });
+          }
+        });
+      } else if (checked) {
+        // Create new task if checking and no active task exists
+        createTask.mutate({
+          text: taskText,
+          completed: checked,
+          checkedAt: Date.now(),
+        }, {
+          onSettled: () => {
+            // Clear optimistic update after database operation
+            setOptimisticUpdates(prev => {
+              const updated = { ...prev };
+              delete updated[taskText];
+              return updated;
+            });
+          }
+        });
+      } else {
+        // Clear optimistic update if unchecking non-existent task
+        setOptimisticUpdates(prev => {
+          const updated = { ...prev };
+          delete updated[taskText];
+          return updated;
+        });
+      }
+    } catch (error) {
+      // Revert optimistic update on error
+      setOptimisticUpdates(prev => {
+        const updated = { ...prev };
+        delete updated[taskText];
+        return updated;
       });
-    } else if (checked) {
-      // Create new task if checking and no active task exists
-      await createTask.mutateAsync({
-        text: taskText,
-        completed: checked,
-        checkedAt: Date.now(),
-      });
+      console.error('Task update failed:', error);
     }
   };
 
@@ -136,8 +178,12 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
       const existingTask = findTaskByText(item.text);
       const timerProgress = existingTask ? getTimerProgress(existingTask.id) : null;
       const hasTimer = timerProgress !== null;
-      // If task has a timer, it should be shown as completed regardless of markdown state
-      const actualCompleted = hasTimer ? true : (existingTask ? existingTask.completed : item.completed);
+      
+      // Use optimistic update if available, otherwise use database/timer state
+      const optimisticState = optimisticUpdates[item.text];
+      const actualCompleted = optimisticState !== undefined 
+        ? optimisticState 
+        : (hasTimer ? true : (existingTask ? existingTask.completed : item.completed));
 
       return (
         <Card
