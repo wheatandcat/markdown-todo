@@ -17,6 +17,7 @@ interface TaskPreviewProps {
 
 export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   const [parsedContent, setParsedContent] = useState<any[]>([]);
+  const [lastUserAction, setLastUserAction] = useState<number>(0);
   const { activeTasks, completedTasks, updateTask, createTask } = useTasks();
   const { getTimerProgress } = useTimers();
 
@@ -24,6 +25,24 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
     const parsed = parseMarkdownTasks(content);
     setParsedContent(parsed);
   }, [content]);
+
+  // Initial timer state synchronization on component mount
+  useEffect(() => {
+    if (activeTasks.data || completedTasks.data) {
+      updateMarkdownForTimerStates();
+    }
+  }, [activeTasks.isSuccess, completedTasks.isSuccess]);
+
+  // Debounced timer state synchronization - only run if no recent user interaction
+  useEffect(() => {
+    const timeSinceLastAction = Date.now() - lastUserAction;
+    if (timeSinceLastAction > 2000 && (activeTasks.data || completedTasks.data)) {
+      const timer = setTimeout(() => {
+        updateMarkdownForTimerStates();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTasks.data, completedTasks.data, lastUserAction]);
 
   const updateMarkdownForTimerStates = () => {
     if (!activeTasks.data && !completedTasks.data) return;
@@ -66,6 +85,9 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   };
 
   const handleTaskToggle = async (taskText: string, checked: boolean) => {
+    // Record user action timestamp to prevent timer sync conflicts
+    setLastUserAction(Date.now());
+    
     // Update markdown content immediately
     updateMarkdownContent(taskText, checked);
     
