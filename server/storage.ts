@@ -1,4 +1,6 @@
 import { tasks, type Task, type InsertTask, type UpdateTask } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   getTasks(): Promise<Task[]>;
@@ -11,67 +13,69 @@ export interface IStorage {
   getTimerTasks(): Promise<Task[]>;
 }
 
-export class MemStorage implements IStorage {
-  private tasks: Map<number, Task>;
-  private currentId: number;
-
-  constructor() {
-    this.tasks = new Map();
-    this.currentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getTasks(): Promise<Task[]> {
-    return Array.from(this.tasks.values()).sort((a, b) => b.createdAt - a.createdAt);
+    const result = await db.select().from(tasks).orderBy(tasks.createdAt);
+    return result.reverse();
   }
 
   async getTask(id: number): Promise<Task | undefined> {
-    return this.tasks.get(id);
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+    return task || undefined;
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
-    const id = this.currentId++;
-    const task: Task = {
-      id,
-      text: insertTask.text,
-      completed: insertTask.completed ?? false,
-      checkedAt: insertTask.checkedAt ?? null,
-      completedAt: insertTask.completedAt ?? null,
-      createdAt: Date.now(),
-    };
-    this.tasks.set(id, task);
+    const [task] = await db
+      .insert(tasks)
+      .values({
+        text: insertTask.text,
+        completed: insertTask.completed ?? false,
+        checkedAt: insertTask.checkedAt ?? null,
+        completedAt: insertTask.completedAt ?? null,
+        createdAt: Date.now(),
+      })
+      .returning();
     return task;
   }
 
   async updateTask(id: number, updateTask: UpdateTask): Promise<Task | undefined> {
-    const task = this.tasks.get(id);
-    if (!task) return undefined;
-
-    const updatedTask: Task = { ...task, ...updateTask };
-    this.tasks.set(id, updatedTask);
-    return updatedTask;
+    const [task] = await db
+      .update(tasks)
+      .set(updateTask)
+      .where(eq(tasks.id, id))
+      .returning();
+    return task || undefined;
   }
 
   async deleteTask(id: number): Promise<boolean> {
-    return this.tasks.delete(id);
+    const result = await db.delete(tasks).where(eq(tasks.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   async getActiveTasks(): Promise<Task[]> {
-    return Array.from(this.tasks.values())
-      .filter(task => !task.completedAt)
-      .sort((a, b) => b.createdAt - a.createdAt);
+    const result = await db
+      .select()
+      .from(tasks)
+      .orderBy(tasks.createdAt);
+    return result.filter(task => !task.completedAt).reverse();
   }
 
   async getCompletedTasks(): Promise<Task[]> {
-    return Array.from(this.tasks.values())
-      .filter(task => task.completedAt)
-      .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+    const result = await db
+      .select()
+      .from(tasks)
+      .orderBy(tasks.completedAt);
+    return result.filter(task => task.completedAt).reverse();
   }
 
   async getTimerTasks(): Promise<Task[]> {
-    return Array.from(this.tasks.values())
-      .filter(task => task.completed && task.checkedAt && !task.completedAt)
-      .sort((a, b) => (a.checkedAt || 0) - (b.checkedAt || 0));
+    const result = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.completed, true))
+      .orderBy(tasks.checkedAt);
+    return result.filter(task => task.checkedAt && !task.completedAt);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
