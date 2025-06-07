@@ -31,8 +31,11 @@ export class MemStorage implements IStorage {
   async createTask(insertTask: InsertTask): Promise<Task> {
     const id = this.currentId++;
     const task: Task = {
-      ...insertTask,
       id,
+      text: insertTask.text,
+      completed: insertTask.completed ?? false,
+      checkedAt: insertTask.checkedAt ?? null,
+      completedAt: insertTask.completedAt ?? null,
       createdAt: Date.now(),
     };
     this.tasks.set(id, task);

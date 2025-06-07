@@ -56,7 +56,7 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
 
   const handleMarkdownChange = (content: string) => {
     setMarkdownContent(content);
-    syncMarkdownTasks(content);
+    syncMarkdownTasks.mutate(content);
   };
 
   const insertTaskTemplate = () => {

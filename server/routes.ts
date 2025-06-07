@@ -111,7 +111,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Parse markdown checkboxes
       const taskRegex = /^[ \t]*-[ \t]*\[([x\s])\][ \t]*(.+)$/gm;
-      const matches = [...markdownContent.matchAll(taskRegex)];
+      const matches = [];
+      let match;
+      while ((match = taskRegex.exec(markdownContent)) !== null) {
+        matches.push(match);
+      }
       
       const tasks = [];
       for (const match of matches) {
