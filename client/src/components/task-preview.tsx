@@ -18,6 +18,7 @@ interface TaskPreviewProps {
 export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   const [parsedContent, setParsedContent] = useState<any[]>([]);
   const [localTaskStates, setLocalTaskStates] = useState<Record<string, boolean>>({});
+  const [isUpdating, setIsUpdating] = useState(false);
   const { activeTasks, completedTasks, updateTask } = useTasks();
   const { getTimerProgress } = useTimers();
 
@@ -33,25 +34,31 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
       }
     });
     setLocalTaskStates(newLocalStates);
+    setHasInitialized(false); // Reset initialization when content changes
   }, [content]);
 
-  // Sync local states with database when tasks data loads
+  // Sync local states with database when tasks data loads (only on initial load)
+  const [hasInitialized, setHasInitialized] = useState(false);
+  
   useEffect(() => {
-    if (activeTasks.data || completedTasks.data) {
+    if ((activeTasks.data || completedTasks.data) && !hasInitialized && !isUpdating) {
       const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
       
       setLocalTaskStates(prev => {
         const updated = { ...prev };
         
-        // Update states based on actual database data
         allTasks.forEach(task => {
-          updated[task.text] = task.completed;
+          if (task.text in prev) {
+            updated[task.text] = task.completed;
+          }
         });
         
         return updated;
       });
+      
+      setHasInitialized(true);
     }
-  }, [activeTasks.data, completedTasks.data]);
+  }, [activeTasks.data, completedTasks.data, hasInitialized, isUpdating]);
 
   const findTaskByText = (text: string): Task | undefined => {
     const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
@@ -60,6 +67,8 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
 
   const handleTaskToggle = async (taskText: string, checked: boolean) => {
     const existingTask = findTaskByText(taskText);
+    
+    setIsUpdating(true);
     
     // Update local state immediately for responsive UI
     setLocalTaskStates(prev => ({
@@ -72,11 +81,17 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
     
     if (existingTask) {
       // Update existing task in database
-      await updateTask.mutateAsync({
-        id: existingTask.id,
-        completed: checked,
-        checkedAt: checked ? Date.now() : null,
-      });
+      try {
+        await updateTask.mutateAsync({
+          id: existingTask.id,
+          completed: checked,
+          checkedAt: checked ? Date.now() : null,
+        });
+      } finally {
+        setIsUpdating(false);
+      }
+    } else {
+      setIsUpdating(false);
     }
   };
 
