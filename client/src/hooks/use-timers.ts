@@ -7,11 +7,7 @@ const TIMER_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 
 export function useTimers() {
   const queryClient = useQueryClient();
-  const { updateTask } = useTasks();
-
-  const timerTasks = useQuery<Task[]>({
-    queryKey: ["/api/tasks/timers"],
-  });
+  const { updateTask, timerTasks } = useTasks();
 
   // Check and complete expired tasks
   useEffect(() => {
