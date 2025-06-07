@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
+import { insertTaskSchema, updateTaskSchema, users } from "@shared/schema";
+import { db } from "./db";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -21,9 +22,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   // Get all tasks
-  app.get("/api/tasks", async (req, res) => {
+  app.get("/api/tasks", isAuthenticated, async (req: any, res) => {
     try {
-      const tasks = await storage.getTasks();
+      const userId = req.user.claims.sub;
+      const tasks = await storage.getTasks(userId);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch tasks" });
@@ -31,9 +33,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get active tasks
-  app.get("/api/tasks/active", async (req, res) => {
+  app.get("/api/tasks/active", isAuthenticated, async (req: any, res) => {
     try {
-      const tasks = await storage.getActiveTasks();
+      const userId = req.user.claims.sub;
+      const tasks = await storage.getActiveTasks(userId);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch active tasks" });
@@ -41,9 +44,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get completed tasks
-  app.get("/api/tasks/completed", async (req, res) => {
+  app.get("/api/tasks/completed", isAuthenticated, async (req: any, res) => {
     try {
-      const tasks = await storage.getCompletedTasks();
+      const userId = req.user.claims.sub;
+      const tasks = await storage.getCompletedTasks(userId);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch completed tasks" });
@@ -51,9 +55,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get timer tasks
-  app.get("/api/tasks/timers", async (req, res) => {
+  app.get("/api/tasks/timers", isAuthenticated, async (req: any, res) => {
     try {
-      const tasks = await storage.getTimerTasks();
+      const userId = req.user.claims.sub;
+      const tasks = await storage.getTimerTasks(userId);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch timer tasks" });
@@ -61,10 +66,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create task
-  app.post("/api/tasks", async (req, res) => {
+  app.post("/api/tasks", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const validatedData = insertTaskSchema.parse(req.body);
-      const task = await storage.createTask(validatedData);
+      const task = await storage.createTask(validatedData, userId);
       res.json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -76,11 +82,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update task
-  app.patch("/api/tasks/:id", async (req, res) => {
+  app.patch("/api/tasks/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const id = parseInt(req.params.id);
       const validatedData = updateTaskSchema.parse(req.body);
-      const task = await storage.updateTask(id, validatedData);
+      const task = await storage.updateTask(id, validatedData, userId);
       
       if (!task) {
         res.status(404).json({ message: "Task not found" });
@@ -98,10 +105,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete task
-  app.delete("/api/tasks/:id", async (req, res) => {
+  app.delete("/api/tasks/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const id = parseInt(req.params.id);
-      const deleted = await storage.deleteTask(id);
+      const deleted = await storage.deleteTask(id, userId);
       
       if (!deleted) {
         res.status(404).json({ message: "Task not found" });
@@ -115,8 +123,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk create tasks from markdown
-  app.post("/api/tasks/markdown", async (req, res) => {
+  app.post("/api/tasks/markdown", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const { markdownContent } = req.body;
       
       if (typeof markdownContent !== 'string') {
@@ -133,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get existing tasks to avoid duplicates
-      const existingTasks = await storage.getTasks();
+      const existingTasks = await storage.getTasks(userId);
       const existingTexts = new Set(existingTasks.map(t => t.text));
       
       const tasks = [];
@@ -150,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const updatedTask = await storage.updateTask(existingTask.id, {
                 completed,
                 checkedAt: completed ? Date.now() : null,
-              });
+              }, userId);
               if (updatedTask) tasks.push(updatedTask);
             } else {
               tasks.push(existingTask);
@@ -164,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           text,
           completed,
           checkedAt: completed ? now : undefined,
-        });
+        }, userId);
         
         tasks.push(task);
       }
@@ -177,20 +186,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
-  // Auto-complete timer tasks
+  // Auto-complete timer tasks for all users
   setInterval(async () => {
     try {
-      const timerTasks = await storage.getTimerTasks();
+      // Get all users and check their timer tasks
+      const allUsers = await db.select().from(users);
       const now = Date.now();
       const TIMER_DURATION = 60 * 60 * 1000; // 1 hour
       
-      for (const task of timerTasks) {
-        if (task.checkedAt && !task.completedAt) {
-          const timeElapsed = now - task.checkedAt;
-          if (timeElapsed >= TIMER_DURATION) {
-            await storage.updateTask(task.id, {
-              completedAt: now,
-            });
+      for (const user of allUsers) {
+        const timerTasks = await storage.getTimerTasks(user.id);
+        
+        for (const task of timerTasks) {
+          if (task.checkedAt && !task.completedAt) {
+            const timeElapsed = now - task.checkedAt;
+            if (timeElapsed >= TIMER_DURATION) {
+              await storage.updateTask(task.id, {
+                completedAt: now,
+              }, user.id);
+            }
           }
         }
       }
