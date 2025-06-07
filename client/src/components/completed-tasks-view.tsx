@@ -44,7 +44,7 @@ export function CompletedTasksView() {
             <Card key={task.id} className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
               <div className="flex items-center space-x-3">
                 <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-                <span className="flex-1 text-gray-900 dark:text-gray-100 line-through">
+                <span className="flex-1 text-gray-900 dark:text-gray-100">
                   {task.text}
                 </span>
                 {task.completedAt && (
