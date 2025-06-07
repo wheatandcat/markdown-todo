@@ -15,12 +15,27 @@ import {
   Sun,
 } from "lucide-react";
 
-export function Sidebar() {
-  const [activeTab, setActiveTab] = useState("active");
+interface SidebarProps {
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
+}
+
+export function Sidebar({ activeTab = "active", onTabChange }: SidebarProps = {}) {
+  const [localActiveTab, setLocalActiveTab] = useState(activeTab);
   const queryClient = useQueryClient();
   const { activeTasks, completedTasks } = useTasks();
   const { timerTasks } = useTimers();
   const { theme, setTheme } = useTheme();
+
+  const currentTab = onTabChange ? activeTab : localActiveTab;
+  
+  const handleTabClick = (tab: string) => {
+    if (onTabChange) {
+      onTabChange(tab);
+    } else {
+      setLocalActiveTab(tab);
+    }
+  };
 
   // Refresh counts every 5 seconds to ensure accuracy
   useEffect(() => {
@@ -87,14 +102,14 @@ export function Sidebar() {
       <nav className="flex-1 px-3 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = currentTab === item.id;
 
           return (
             <Button
               key={item.id}
               variant={isActive ? "secondary" : "ghost"}
               className="w-full justify-start px-3 py-2 h-auto"
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleTabClick(item.id)}
             >
               <Icon className="mr-3 h-4 w-4 text-muted-foreground" />
               <span className="flex-1 text-left">{item.label}</span>

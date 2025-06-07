@@ -29,6 +29,7 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
 
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
   const { toast } = useToast();
   const { syncMarkdownTasks } = useTasks();
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -75,13 +76,13 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
-        <Sidebar />
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="w-64 p-0">
-          <Sidebar />
+          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
         </SheetContent>
       </Sheet>
 
@@ -122,17 +123,30 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
           </div>
         </header>
 
-        {/* Editor Container */}
+        {/* Content Container */}
         <main className="flex-1 flex overflow-hidden">
-          <MarkdownEditor
-            content={markdownContent}
-            onChange={handleMarkdownChange}
-            onInsertTemplate={insertTaskTemplate}
-          />
-          <TaskPreview 
-            content={markdownContent} 
-            onMarkdownUpdate={setMarkdownContent}
-          />
+          {activeTab === "active" && (
+            <>
+              <MarkdownEditor
+                content={markdownContent}
+                onChange={handleMarkdownChange}
+                onInsertTemplate={insertTaskTemplate}
+              />
+              <TaskPreview 
+                content={markdownContent} 
+                onMarkdownUpdate={setMarkdownContent}
+              />
+            </>
+          )}
+          {activeTab === "completed" && (
+            <CompletedTasksView />
+          )}
+          {activeTab === "timers" && (
+            <TimerTasksView />
+          )}
+          {activeTab === "stats" && (
+            <StatsView />
+          )}
         </main>
       </div>
 
