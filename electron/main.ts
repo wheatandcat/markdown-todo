@@ -5,7 +5,7 @@ import { spawn, ChildProcess } from 'child_process';
 let mainWindow: BrowserWindow | null = null;
 let serverProcess: ChildProcess | null = null;
 
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const PORT = 5000;
 
 function createMainWindow(): void {
@@ -51,18 +51,35 @@ function createMainWindow(): void {
   });
 }
 
+async function checkServerConnection(): Promise<boolean> {
+  try {
+    const response = await fetch(`http://localhost:${PORT}/api/auth/user`);
+    return response.status === 401 || response.ok; // 401 means server is running but not authenticated
+  } catch {
+    return false;
+  }
+}
+
 function startServer(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (isDev) {
-      // In development, check if server is running and resolve immediately
-      console.log('Development mode: assuming server is already running');
+  return new Promise(async (resolve, reject) => {
+    // Always check if external server is available first
+    const serverRunning = await checkServerConnection();
+    
+    if (serverRunning) {
+      console.log('External server detected, using existing connection');
       resolve();
       return;
     }
 
-    // In production, start the server process
-    const serverPath = join(__dirname, '../../dist/index.js');
-    console.log(`Starting server from: ${serverPath}`);
+    if (isDev) {
+      console.log('Development mode: No external server found');
+      reject(new Error('Please start the development server first with: npm run dev'));
+      return;
+    }
+
+    // Only try to start embedded server in packaged production app
+    const serverPath = join(process.resourcesPath, 'server', 'index.js');
+    console.log(`Starting embedded server from: ${serverPath}`);
     
     serverProcess = spawn('node', [serverPath], {
       env: { ...process.env, NODE_ENV: 'production' },
@@ -81,13 +98,12 @@ function startServer(): Promise<void> {
     });
 
     serverProcess.on('error', (error) => {
-      console.error('Failed to start server:', error);
+      console.error('Failed to start embedded server:', error);
       reject(error);
     });
 
-    // Timeout after 10 seconds
     setTimeout(() => {
-      resolve(); // Continue even if server doesn't respond
+      resolve();
     }, 10000);
   });
 }
@@ -178,7 +194,16 @@ app.whenReady().then(async () => {
     createMenu();
   } catch (error) {
     console.error('Failed to initialize app:', error);
+    
+    // Show error dialog to user
+    const { dialog } = require('electron');
+    dialog.showErrorBox(
+      'サーバー接続エラー',
+      'タスク管理サーバーに接続できません。\n\n開発サーバーを起動してから再度お試しください:\nnpm run dev'
+    );
+    
     app.quit();
+    return;
   }
 
   app.on('activate', () => {
