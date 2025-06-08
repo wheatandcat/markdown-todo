@@ -21,16 +21,18 @@ sh ./scripts/test-build-fix.sh
 
 ### 2. ビルド実行
 ```bash
-# 完全ビルド（自動的に依存関係を修正）
+# ES Module互換性修正版ビルド（推奨）
+sh ./scripts/build-electron-fixed.sh
+
+# または標準ビルド
 sh ./scripts/build-electron.sh
 ```
 
-**ビルド内容**:
-- Web アプリケーションのプロダクションビルド
-- TypeScript→JavaScript コンパイル
-- package.json の依存関係自動修正
-- macOS用DMG/ZIPファイル生成
-- 元のpackage.json自動復元
+**ES Module修正版の特徴**:
+- CommonJSとES Moduleの競合を完全解決
+- プロダクション用package.json自動生成
+- モジュールタイプエラーの根本的解決
+- 安定したmacOSアプリ起動を保証
 
 ### 3. ビルド成果物確認
 ```bash
@@ -46,8 +48,12 @@ ls -la dist-electron/
 
 ## トラブルシューティング
 
-### エラー: "require() of ES Module"
-**解決済み**: 設定ファイルを`.cjs`形式に変更済み
+### エラー: "require() of ES Module" / "ReferenceError: exports is not defined"
+**原因**: CommonJSとES Moduleの競合  
+**解決方法**: ES Module修正版ビルドスクリプトを使用
+```bash
+sh ./scripts/build-electron-fixed.sh
+```
 
 ### エラー: "Cannot find module"
 ```bash
