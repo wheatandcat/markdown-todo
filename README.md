@@ -285,6 +285,43 @@ npm run dev
 git clone <your-repo> && cd smart-task-manager && npm install && npm run db:push && npm run dev
 ```
 
+---
+
+## 🖥️ macOSアプリケーション
+
+このプロジェクトはElectronを使ってネイティブmacOSアプリとしてもビルドできます。
+
+<table>
+<tr>
+<td width="50%">
+
+### 🚀 **開発モード**
+```bash
+# Electronアプリを開発モードで起動
+./scripts/dev-electron.sh
+```
+
+### 📦 **プロダクションビルド**
+```bash
+# macOSアプリをビルド (.dmg)
+./scripts/build-electron.sh
+```
+
+</td>
+<td width="50%">
+
+### ✨ **ネイティブ機能**
+- 🍎 **macOS統合**: ネイティブメニューバー・ショートカット
+- 🌙 **ダークモード**: システム設定に自動対応
+- 🔒 **セキュリティ**: コンテキスト分離・権限管理
+- 📱 **ウィンドウ管理**: macOSネイティブな操作感
+
+詳細: [ELECTRON_SETUP.md](ELECTRON_SETUP.md)
+
+</td>
+</tr>
+</table>
+
 ## 📁 プロジェクト構成
 
 <div align="center">
