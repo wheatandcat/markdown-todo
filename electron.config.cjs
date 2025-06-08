@@ -4,7 +4,6 @@ module.exports = {
   directories: {
     output: 'dist-electron'
   },
-  main: 'electron/dist/main.js',
   buildDependenciesFromSource: false,
   nodeGypRebuild: false,
   files: [
