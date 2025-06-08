@@ -19,6 +19,12 @@ module.exports = {
     main: 'electron/dist/main.js',
     type: undefined
   },
+  extraResources: [
+    {
+      from: 'dist',
+      to: 'dist'
+    }
+  ],
   mac: {
     category: 'public.app-category.productivity',
     target: [

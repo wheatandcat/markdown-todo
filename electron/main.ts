@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, shell, ipcMain } from 'electron';
 import { join } from 'path';
 import { spawn, ChildProcess } from 'child_process';
+import { createStaticServer } from './static-server';
 
 let mainWindow: BrowserWindow | null = null;
 let serverProcess: ChildProcess | null = null;
@@ -24,10 +25,35 @@ function createMainWindow(): void {
     show: false,
   });
 
-  // Load the app
-  const startUrl = isDev 
-    ? `http://localhost:${PORT}` 
-    : `file://${join(__dirname, '../dist/public/index.html')}`;
+  // Load the app with fallback strategy
+  let startUrl: string;
+  
+  if (isDev) {
+    startUrl = `http://localhost:${PORT}`;
+  } else {
+    // Try multiple paths for packaged app
+    const fs = require('fs');
+    const possiblePaths = [
+      join(__dirname, '../dist/public/index.html'),
+      join(process.resourcesPath, 'dist/public/index.html'),
+      join(process.resourcesPath, 'app/dist/public/index.html')
+    ];
+    
+    let htmlPath = '';
+    for (const path of possiblePaths) {
+      if (fs.existsSync(path)) {
+        htmlPath = path;
+        break;
+      }
+    }
+    
+    if (htmlPath) {
+      startUrl = `file://${htmlPath}`;
+    } else {
+      // Fallback to localhost if files not found
+      startUrl = `http://localhost:${PORT}`;
+    }
+  }
   
   console.log(`Loading URL: ${startUrl}`);
   console.log(`__dirname: ${__dirname}`);
@@ -110,7 +136,7 @@ async function checkServerConnection(): Promise<boolean> {
   return new Promise((resolve) => {
     const http = require('http');
     
-    const req = http.get(`http://localhost:${PORT}/api/auth/user`, (res: any) => {
+    const req = http.get(`http://localhost:${PORT}`, (res: any) => {
       resolve(true); // Server is responding
     });
     
@@ -118,7 +144,7 @@ async function checkServerConnection(): Promise<boolean> {
       resolve(false); // Server not running
     });
     
-    req.setTimeout(2000, () => {
+    req.setTimeout(3000, () => {
       req.destroy();
       resolve(false);
     });
@@ -127,7 +153,7 @@ async function checkServerConnection(): Promise<boolean> {
 
 function startServer(): Promise<void> {
   return new Promise(async (resolve, reject) => {
-    // Always check if external server is available first
+    // Check if external server is available first
     const serverRunning = await checkServerConnection();
     
     if (serverRunning) {
@@ -142,38 +168,79 @@ function startServer(): Promise<void> {
       return;
     }
 
-    // Only try to start embedded server in packaged production app
-    const serverPath = join(process.resourcesPath, 'dist', 'index.js');
-    console.log(`Starting embedded server from: ${serverPath}`);
-    
-    serverProcess = spawn('node', [serverPath], {
-      env: { 
-        ...process.env, 
-        NODE_ENV: 'production',
-        PORT: PORT.toString()
-      },
-      stdio: 'pipe'
-    });
-
-    serverProcess.stdout?.on('data', (data) => {
-      console.log(`Server: ${data}`);
-      if (data.toString().includes('serving on port')) {
-        resolve();
-      }
-    });
-
-    serverProcess.stderr?.on('data', (data) => {
-      console.error(`Server Error: ${data}`);
-    });
-
-    serverProcess.on('error', (error) => {
-      console.error('Failed to start embedded server:', error);
-      reject(error);
-    });
-
-    setTimeout(() => {
+    // In production, start static file server as fallback
+    try {
+      console.log('Starting static file server for packaged app');
+      await createStaticServer(PORT);
       resolve();
-    }, 10000);
+    } catch (staticServerError) {
+      console.error('Static server failed, trying embedded server:', staticServerError);
+      
+      // Try embedded server as last resort
+      const possibleServerPaths = [
+        join(process.resourcesPath, 'dist', 'index.js'),
+        join(process.resourcesPath, 'app', 'dist', 'index.js'),
+        join(__dirname, '..', 'dist', 'index.js'),
+        join(process.cwd(), 'dist', 'index.js')
+      ];
+
+      let serverPath = '';
+      const fs = require('fs');
+      
+      for (const path of possibleServerPaths) {
+        if (fs.existsSync(path)) {
+          serverPath = path;
+          break;
+        }
+      }
+
+      if (!serverPath) {
+        console.error('No server executable found');
+        reject(new Error('No server available'));
+        return;
+      }
+
+      console.log(`Starting embedded server from: ${serverPath}`);
+      
+      serverProcess = spawn('node', [serverPath], {
+        env: { 
+          ...process.env, 
+          NODE_ENV: 'production',
+          PORT: (PORT + 1).toString(), // Use different port to avoid conflict
+          DATABASE_URL: process.env.DATABASE_URL || 'sqlite:app.db'
+        },
+        stdio: 'pipe'
+      });
+
+      let resolved = false;
+
+      serverProcess.stdout?.on('data', (data) => {
+        console.log(`Server: ${data}`);
+        if (data.toString().includes('serving on port') && !resolved) {
+          resolved = true;
+          resolve();
+        }
+      });
+
+      serverProcess.stderr?.on('data', (data) => {
+        console.error(`Server Error: ${data}`);
+      });
+
+      serverProcess.on('error', (error) => {
+        console.error('Failed to start embedded server:', error);
+        if (!resolved) {
+          resolved = true;
+          reject(error);
+        }
+      });
+
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          resolve();
+        }
+      }, 10000);
+    }
   });
 }
 
