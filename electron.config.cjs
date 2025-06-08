@@ -5,11 +5,15 @@ module.exports = {
     output: 'dist-electron'
   },
   main: 'electron/dist/main.js',
+  buildDependenciesFromSource: false,
+  nodeGypRebuild: false,
   files: [
     'dist/**/*',
     'node_modules/**/*',
     'server/**/*',
-    'electron/dist/**/*'
+    'electron/dist/**/*',
+    '!node_modules/electron/**/*',
+    '!node_modules/electron-builder/**/*'
   ],
   extraResources: [
     {
