@@ -29,15 +29,19 @@ export function createStaticServer(port: number): Promise<void> {
       // Determine static file root
       let staticRoot = '';
       const possibleRoots = [
-        join(process.resourcesPath, 'dist', 'public'),
-        join(process.resourcesPath, 'app', 'dist', 'public'),
+        join(process.resourcesPath || '', 'dist', 'public'),
+        join(process.resourcesPath || '', 'app', 'dist', 'public'),
         join(__dirname, '..', 'dist', 'public'),
         join(process.cwd(), 'dist', 'public')
       ];
       
+      console.log('Checking static file roots:', possibleRoots);
+      
       for (const root of possibleRoots) {
+        console.log(`Checking path: ${root}, exists: ${existsSync(root)}`);
         if (existsSync(root)) {
           staticRoot = root;
+          console.log(`Using static root: ${staticRoot}`);
           break;
         }
       }
@@ -50,6 +54,14 @@ export function createStaticServer(port: number): Promise<void> {
       
       // Parse requested file path
       let filePath = url === '/' ? '/index.html' : url;
+      
+      // Handle case where staticRoot is empty
+      if (!staticRoot) {
+        res.writeHead(404);
+        res.end('Static files not found');
+        return;
+      }
+      
       const fullPath = join(staticRoot, filePath);
       
       // Security check - prevent directory traversal

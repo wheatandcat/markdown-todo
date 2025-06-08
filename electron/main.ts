@@ -31,28 +31,8 @@ function createMainWindow(): void {
   if (isDev) {
     startUrl = `http://localhost:5000`; // Always use 5000 in dev mode
   } else {
-    // Try multiple paths for packaged app
-    const fs = require('fs');
-    const possiblePaths = [
-      join(__dirname, '../dist/public/index.html'),
-      join(process.resourcesPath, 'dist/public/index.html'),
-      join(process.resourcesPath, 'app/dist/public/index.html')
-    ];
-    
-    let htmlPath = '';
-    for (const path of possiblePaths) {
-      if (fs.existsSync(path)) {
-        htmlPath = path;
-        break;
-      }
-    }
-    
-    if (htmlPath) {
-      startUrl = `file://${htmlPath}`;
-    } else {
-      // Fallback to localhost if files not found
-      startUrl = `http://localhost:${PORT}`;
-    }
+    // In production/packaged mode, always use localhost server
+    startUrl = `http://localhost:${PORT}`;
   }
   
   console.log(`Loading URL: ${startUrl}`);
@@ -80,10 +60,14 @@ function createMainWindow(): void {
           <head><title>Connection Error</title></head>
           <body style="font-family: system-ui; padding: 40px; text-align: center;">
             <h1>サーバーに接続できません</h1>
-            <p>開発サーバーが起動していることを確認してください</p>
+            <p>内蔵サーバーの起動を待機中...</p>
             <p>Port: ${PORT}</p>
             <p>URL: ${startUrl}</p>
             <button onclick="location.reload()">再試行</button>
+            <script>
+              // Auto-retry after 3 seconds
+              setTimeout(() => location.reload(), 3000);
+            </script>
           </body>
         </html>
       `;
@@ -171,10 +155,11 @@ function startServer(): Promise<void> {
       return;
     }
 
-    // In production, start static file server as fallback
+    // In production, start static file server first
     try {
-      console.log('Starting static file server for packaged app');
+      console.log(`Starting static file server on port ${PORT}`);
       await createStaticServer(PORT);
+      console.log(`Static server successfully started on port ${PORT}`);
       resolve();
     } catch (staticServerError) {
       console.error('Static server failed, trying embedded server:', staticServerError);
