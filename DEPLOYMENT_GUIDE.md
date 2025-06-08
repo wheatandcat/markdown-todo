@@ -21,18 +21,18 @@ sh ./scripts/test-build-fix.sh
 
 ### 2. ビルド実行
 ```bash
-# ES Module互換性修正版ビルド（推奨）
-sh ./scripts/build-electron-fixed.sh
+# 最終修正版ビルド（推奨）
+sh ./scripts/build-electron-final.sh
 
-# または標準ビルド
-sh ./scripts/build-electron.sh
+# または簡易ビルド
+sh ./scripts/build-simple.sh
 ```
 
-**ES Module修正版の特徴**:
-- CommonJSとES Moduleの競合を完全解決
-- プロダクション用package.json自動生成
-- モジュールタイプエラーの根本的解決
-- 安定したmacOSアプリ起動を保証
+**最終修正版の特徴**:
+- ES Module/CommonJS互換性問題を完全解決
+- ビルド時のみpackage.json調整
+- 元の設定を自動復元
+- 確実なmacOSアプリ生成
 
 ### 3. ビルド成果物確認
 ```bash
@@ -49,10 +49,10 @@ ls -la dist-electron/
 ## トラブルシューティング
 
 ### エラー: "require() of ES Module" / "ReferenceError: exports is not defined"
-**原因**: CommonJSとES Moduleの競合  
-**解決方法**: ES Module修正版ビルドスクリプトを使用
+**原因**: CommonJSとES Moduleの競合、vite.config.tsでのtop-level await  
+**解決方法**: 最終修正版ビルドスクリプトを使用
 ```bash
-sh ./scripts/build-electron-fixed.sh
+sh ./scripts/build-electron-final.sh
 ```
 
 ### エラー: "Cannot find module"
