@@ -56,9 +56,10 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use environment PORT or default to 5000 for Replit
-  // Local development can override with PORT=3001
-  const port = parseInt(process.env.PORT || "5000", 10);
+  // Use different ports for different environments to avoid conflicts
+  // Development: 5000, Production: 5002, Electron: 5001
+  const defaultPort = app.get("env") === "development" ? "5000" : "5002";
+  const port = parseInt(process.env.PORT || defaultPort, 10);
   server.listen({
     port,
     host: "0.0.0.0",
