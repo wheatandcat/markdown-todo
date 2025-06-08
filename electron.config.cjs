@@ -7,12 +7,13 @@ module.exports = {
   files: [
     'dist/**/*',
     'electron/dist/**/*',
-    {
-      from: 'node_modules',
-      to: 'node_modules',
-      filter: ['!**/electron', '!**/electron-builder']
-    }
+    'node_modules/**/*',
+    '!node_modules/electron/**/*',
+    '!node_modules/electron-builder/**/*'
   ],
+  extraMetadata: {
+    main: 'electron/dist/main.js'
+  },
   mac: {
     category: 'public.app-category.productivity',
     target: [
@@ -25,18 +26,6 @@ module.exports = {
     gatekeeperAssess: false
   },
   dmg: {
-    title: 'スマートタスク管理',
-    contents: [
-      {
-        x: 130,
-        y: 220
-      },
-      {
-        x: 410,
-        y: 220,
-        type: 'link',
-        path: '/Applications'
-      }
-    ]
+    title: 'スマートタスク管理'
   }
 };
