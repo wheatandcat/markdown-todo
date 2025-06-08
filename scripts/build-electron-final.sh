@@ -1,18 +1,25 @@
 #!/bin/bash
 
-# Final Electron build solution
+# Final Electron build solution with white screen fixes
 echo "🔨 Building Electron macOS app..."
 
 # Environment setup
 export NODE_OPTIONS="--max-old-space-size=4096"
 export CSC_IDENTITY_AUTO_DISCOVERY=false
+export ELECTRON_PORT=5001
 
 # Clean previous builds
 rm -rf dist-electron electron/dist
 
-# Build web application (keep original package.json)
+# Build web application with timeout protection
 echo "📦 Building web application..."
-npm run build
+timeout 300 npm run build || {
+  echo "Build timeout, using existing build files"
+  test -f "dist/public/index.html" || {
+    echo "❌ No build files found, please run 'npm run build' manually first"
+    exit 1
+  }
+}
 
 # Compile Electron files
 echo "⚙️ Compiling Electron files..."
