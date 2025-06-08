@@ -21,18 +21,18 @@ sh ./scripts/test-build-fix.sh
 
 ### 2. ビルド実行
 ```bash
-# 最終修正版ビルド（推奨）
-sh ./scripts/build-electron-final.sh
+# 白い画面修正版ビルド（推奨）
+sh ./scripts/build-electron-final-fixed.sh
 
-# または簡易ビルド
-sh ./scripts/build-simple.sh
+# または標準ビルド
+sh ./scripts/build-electron-final.sh
 ```
 
-**最終修正版の特徴**:
-- ES Module/CommonJS互換性問題を完全解決
-- ビルド時のみpackage.json調整
-- 元の設定を自動復元
-- 確実なmacOSアプリ生成
+**白い画面修正版の特徴**:
+- localhost:5001サーバー強制使用（file://プロトコル回避）
+- ポート競合完全解決（開発:5000、プロダクション:5002、Electron:5001）
+- 自動接続リトライ機能
+- 静的ファイル配信確保
 
 ### 3. ビルド成果物確認
 ```bash
