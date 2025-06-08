@@ -52,12 +52,22 @@ function createMainWindow(): void {
 }
 
 async function checkServerConnection(): Promise<boolean> {
-  try {
-    const response = await fetch(`http://localhost:${PORT}/api/auth/user`);
-    return response.status === 401 || response.ok; // 401 means server is running but not authenticated
-  } catch {
-    return false;
-  }
+  return new Promise((resolve) => {
+    const http = require('http');
+    
+    const req = http.get(`http://localhost:${PORT}/api/auth/user`, (res: any) => {
+      resolve(true); // Server is responding
+    });
+    
+    req.on('error', () => {
+      resolve(false); // Server not running
+    });
+    
+    req.setTimeout(2000, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
 }
 
 function startServer(): Promise<void> {

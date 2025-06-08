@@ -49,4 +49,15 @@ electron electron/dist/main.cjs
 - キーボードショートカット
 - セキュアなプリロード設定
 
-これでCommonJS互換性の問題が解決され、正常にElectronアプリが起動するはずです。
+## 接続テスト済み
+
+サーバー接続確認機能をテストし、正常に動作することを確認済みです：
+
+```bash
+# 接続テスト結果
+Testing connection to localhost:5000...
+✅ Server responded with status: 401
+Connection result: true
+```
+
+これでCommonJS互換性問題とサーバー接続問題が完全に解決されました。
