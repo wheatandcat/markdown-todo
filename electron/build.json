@@ -1,0 +1,55 @@
+{
+  "appId": "com.smarttask.manager",
+  "productName": "スマートタスク管理",
+  "directories": {
+    "output": "dist-electron"
+  },
+  "files": [
+    "dist/**/*",
+    "node_modules/**/*",
+    "server/**/*",
+    "electron/dist/**/*"
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "icon": "electron/assets/icon.icns",
+    "darkModeSupport": true,
+    "gatekeeperAssess": false
+  },
+  "dmg": {
+    "title": "スマートタスク管理",
+    "icon": "electron/assets/icon.icns",
+    "background": "electron/assets/dmg-background.png",
+    "contents": [
+      {
+        "x": 130,
+        "y": 220
+      },
+      {
+        "x": 410,
+        "y": 220,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ],
+    "window": {
+      "width": 540,
+      "height": 380
+    }
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "your-username",
+    "repo": "smart-task-manager"
+  }
+}
