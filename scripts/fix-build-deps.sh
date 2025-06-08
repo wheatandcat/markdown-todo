@@ -14,6 +14,7 @@ cat > package.json.tmp << 'EOF'
   "description": "A sophisticated Japanese TODO application with Markdown support and cross-platform capabilities",
   "author": "Task Manager Team",
   "main": "electron/dist/main.js",
+  "homepage": "./",
   "type": "module",
   "license": "MIT",
   "scripts": {

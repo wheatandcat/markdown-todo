@@ -4,20 +4,13 @@ module.exports = {
   directories: {
     output: 'dist-electron'
   },
-  buildDependenciesFromSource: false,
-  nodeGypRebuild: false,
   files: [
     'dist/**/*',
-    'node_modules/**/*',
-    'server/**/*',
     'electron/dist/**/*',
-    '!node_modules/electron/**/*',
-    '!node_modules/electron-builder/**/*'
-  ],
-  extraResources: [
     {
-      from: 'server',
-      to: 'server'
+      from: 'node_modules',
+      to: 'node_modules',
+      filter: ['!**/electron', '!**/electron-builder']
     }
   ],
   mac: {
@@ -26,16 +19,10 @@ module.exports = {
       {
         target: 'dmg',
         arch: ['x64', 'arm64']
-      },
-      {
-        target: 'zip',
-        arch: ['x64', 'arm64']
       }
     ],
     darkModeSupport: true,
-    gatekeeperAssess: false,
-    hardenedRuntime: true,
-    entitlements: 'electron/entitlements.mac.plist'
+    gatekeeperAssess: false
   },
   dmg: {
     title: 'スマートタスク管理',
@@ -50,19 +37,6 @@ module.exports = {
         type: 'link',
         path: '/Applications'
       }
-    ],
-    window: {
-      width: 540,
-      height: 380
-    }
-  },
-  nsis: {
-    oneClick: false,
-    allowToChangeInstallationDirectory: true
-  },
-  publish: {
-    provider: 'github',
-    owner: 'your-username',
-    repo: 'smart-task-manager'
+    ]
   }
 };

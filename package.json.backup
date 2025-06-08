@@ -1,10 +1,6 @@
 {
-  "name": "smart-task-manager",
+  "name": "rest-express",
   "version": "1.0.0",
-  "description": "A sophisticated Japanese TODO application with Markdown support and cross-platform capabilities",
-  "author": "Task Manager Team",
-  "main": "electron/dist/main.js",
-  "homepage": "./",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -57,6 +53,8 @@
     "date-fns": "^3.6.0",
     "drizzle-orm": "^0.39.1",
     "drizzle-zod": "^0.7.0",
+    "electron": "^36.4.0",
+    "electron-builder": "^26.0.12",
     "embla-carousel-react": "^8.6.0",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
@@ -88,8 +86,6 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
-    "electron": "^36.4.0",
-    "electron-builder": "^26.0.12",
     "@replit/vite-plugin-cartographer": "^0.2.7",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
     "@tailwindcss/typography": "^0.5.15",
