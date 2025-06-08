@@ -209,7 +209,7 @@ function startServer(): Promise<void> {
         env: { 
           ...process.env, 
           NODE_ENV: 'production',
-          PORT: (PORT + 1).toString(), // Use different port to avoid conflict
+          PORT: '5002', // Use port 5002 for production server
           DATABASE_URL: process.env.DATABASE_URL || 'sqlite:app.db'
         },
         stdio: 'pipe'
