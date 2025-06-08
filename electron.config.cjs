@@ -27,6 +27,7 @@ module.exports = {
   ],
   mac: {
     category: 'public.app-category.productivity',
+    icon: 'assets/icon.icns',
     target: [
       {
         target: 'dmg',
