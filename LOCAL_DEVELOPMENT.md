@@ -55,6 +55,17 @@ Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
 1. `./scripts/dev-local.sh` を使用してポート3001で起動
 2. または他のプロセスを停止: `lsof -ti:5000 | xargs kill -9`
 
+### ローカル認証問題
+```
+GET /api/auth/user 401 in 3ms :: {"message":"Unauthorized"}
+```
+
+**原因**: セッションクッキーの`secure: true`設定がHTTPローカル環境で機能しない
+
+**解決済み**: `secure: process.env.NODE_ENV === 'production'`に修正
+- 本番環境：HTTPS必須（secure: true）
+- 開発環境：HTTP対応（secure: false）
+
 ### Electron接続エラー
 Electronアプリが正しいポートに接続できない場合：
 
@@ -62,6 +73,11 @@ Electronアプリが正しいポートに接続できない場合：
 # 明示的にポート指定
 PORT=3001 ./scripts/electron-only.sh
 ```
+
+### 認証方式について
+- **Replitユーザー**: OAuth認証のみ（パスワード不要）
+- **ローカルユーザー**: メール/パスワード認証
+- **混在利用**: 同じメールで両方式併用不可
 
 ## 開発ワークフロー
 
