@@ -4,7 +4,7 @@ module.exports = {
   directories: {
     output: 'dist-electron'
   },
-  main: 'electron/dist/main.cjs',
+  main: 'electron/dist/main.js',
   files: [
     'dist/**/*',
     'node_modules/**/*',

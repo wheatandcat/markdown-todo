@@ -1,142 +1,97 @@
-# TODOアプリ デプロイメントガイド
+# macOSアプリデプロイメントガイド
 
-## 🚀 デプロイメント方法
+## 修正済みの問題
 
-### Replit Deployments での Web デプロイ
-1. Replit で「Deploy」ボタンをクリック
-2. 自動的にビルドとデプロイが実行されます
-3. `.replit.app` ドメインでアクセス可能
+✅ **ES Module設定ファイルエラー**: `electron.config.js` → `electron.config.cjs`に変更  
+✅ **CommonJS互換性**: TypeScriptコンパイル設定を最適化  
+✅ **ビルドスクリプト**: ファイル拡張子とパス参照を修正  
+✅ **macOS権限設定**: `entitlements.mac.plist`を追加  
 
-### macOS ネイティブアプリ
+## ローカルビルド手順
+
+### 1. 前提条件確認
 ```bash
-# 開発モード（サーバー起動後）
-./scripts/electron-only.sh
+# Node.js バージョン確認
+node --version  # v20以上推奨
 
-# 本番用ビルド
-npm run electron:build
+# 必要パッケージインストール状況確認
+npm list electron electron-builder
 ```
 
-## 📱 プラットフォーム対応
-
-| プラットフォーム | 対応状況 | アクセス方法 |
-|---|---|---|
-| **Web ブラウザ** | ✅ 完全対応 | Replit Deployments |
-| **macOS ネイティブ** | ✅ 完全対応 | Electron アプリ |
-| **Windows** | 🔄 設定可能 | Electron 設定変更 |
-| **Linux** | 🔄 設定可能 | Electron 設定変更 |
-
-## 🔐 認証システム
-
-### デュアル認証対応
-- **Replit Auth**: ワンクリック認証
-- **Email/Password**: ローカル認証
-
-### 環境変数
+### 2. ビルド実行
 ```bash
-# 必須
-DATABASE_URL=postgresql://...
-SESSION_SECRET=your-secret-key
-
-# Replit Auth用（オプション）
-REPL_ID=your-repl-id
-ISSUER_URL=https://replit.com/oidc
-REPLIT_DOMAINS=your-domain.replit.app
+# クリーンビルド
+sh ./scripts/build-electron.sh
 ```
 
-## 🎯 主要機能
-
-### タスク管理
-- ✅ Markdown対応テキスト入力
-- ✅ リアルタイム更新
-- ✅ 自動タイマー機能（1時間後自動完了）
-- ✅ アクティブ/完了/タイマータスクの分類
-
-### UI/UX
-- ✅ レスポンシブデザイン
-- ✅ ダークモード対応
-- ✅ 日本語インターフェース
-- ✅ Tailwind CSS スタイリング
-
-### ネイティブアプリ体験
-- ✅ macOS風メニュー（日本語）
-- ✅ キーボードショートカット
-- ✅ ウィンドウ管理
-- ✅ バックグラウンド実行
-
-## 🛠️ 技術スタック
-
-### フロントエンド
-- React + TypeScript
-- Tailwind CSS + shadcn/ui
-- TanStack Query
-- Wouter (ルーティング)
-
-### バックエンド
-- Node.js + Express
-- PostgreSQL (Neon)
-- Drizzle ORM
-- Passport.js
-
-### デスクトップ
-- Electron
-- TypeScript
-- ネイティブメニュー
-- セキュアなプリロード
-
-## 📊 パフォーマンス最適化
-
-- ✅ React Query による効率的なデータフェッチ
-- ✅ PostgreSQL インデックス最適化
-- ✅ セッション管理の最適化
-- ✅ 自動キャッシュ無効化
-
-## 🎨 デザインシステム
-
-- **カラーパレット**: HSL形式で統一
-- **コンポーネント**: shadcn/ui ベース
-- **アイコン**: Lucide React
-- **フォント**: システムフォント
-
-## 🔄 開発ワークフロー
-
-### Replit環境
+### 3. ビルド成果物確認
 ```bash
-# Web開発（ポート5000）
-npm run dev
-
-# データベース更新
-npm run db:push
+# 生成されたファイル確認
+ls -la dist-electron/
 ```
 
-### ローカル環境
+期待される出力：
+- `スマートタスク管理-1.0.0-arm64.dmg` (Apple Silicon Mac用)
+- `スマートタスク管理-1.0.0-x64.dmg` (Intel Mac用)
+- `スマートタスク管理-1.0.0-arm64-mac.zip`
+- `スマートタスク管理-1.0.0-x64-mac.zip`
+
+## トラブルシューティング
+
+### エラー: "require() of ES Module"
+**解決済み**: 設定ファイルを`.cjs`形式に変更済み
+
+### エラー: "Cannot find module"
 ```bash
-# ローカル開発（ポート3001で競合回避）
-./scripts/dev-local.sh
-
-# Electron開発（自動ポート検出）
-./scripts/dev-electron.sh
-
-# Electronのみ起動
-./scripts/electron-only.sh
+# 依存関係を再インストール
+rm -rf node_modules package-lock.json
+npm install
 ```
 
-### ポート競合の解決
-- **Replit**: ポート5000（固定）
-- **ローカル**: ポート3001（自動設定）
-- **本番**: 環境変数PORT使用
+### エラー: "Code signing failed"
+```bash
+# 開発者証明書なしでビルド
+export CSC_IDENTITY_AUTO_DISCOVERY=false
+sh ./scripts/build-electron.sh
+```
 
-## 📝 今後の拡張可能性
+### ビルド時間の最適化
+```bash
+# 単一アーキテクチャのみビルド（テスト用）
+npx electron-builder --mac --x64 --config electron.config.cjs
+```
 
-- Windows/Linux 向け Electron ビルド
-- モバイルアプリ (React Native)
-- PWA 対応
-- リアルタイム同期
-- チーム機能
-- ファイル添付
-- 通知システム
+## 配布方法
 
----
+### DMGファイル配布
+1. `dist-electron/`フォルダからDMGファイルを取得
+2. 他のMacユーザーに直接配布可能
+3. ユーザーは「アプリケーション」フォルダにドラッグ&ドロップでインストール
 
-**作成日**: 2025年6月8日  
-**バージョン**: 1.0.0  
-**最終更新**: macOS Electron アプリ統合完了
+### ZIPファイル配布
+1. より軽量なZIPファイルを使用
+2. ユーザーが解凍後に.appファイルを実行
+
+## セキュリティ注意事項
+
+### macOS Gatekeeper
+- 開発者証明書がない場合、初回起動時にセキュリティ警告が表示
+- ユーザーは「システム設定」→「プライバシーとセキュリティ」で許可が必要
+
+### 回避方法（配布時にユーザーに説明）
+```bash
+# コマンドラインでの実行（一時的）
+xattr -cr /Applications/スマートタスク管理.app
+```
+
+## 自動配布設定（オプション）
+
+### GitHub Releases
+`electron.config.cjs`の`publish`設定を有効化することで、GitHub Releasesに自動アップロード可能。
+
+### 必要な設定
+1. GitHubリポジトリ作成
+2. Personal Access Token設定
+3. 設定ファイル内のowner/repo名を更新
+
+これで安定したmacOSアプリの配布が可能になります。

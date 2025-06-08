@@ -15,18 +15,12 @@ npm run build
 echo "⚙️ Compiling Electron files..."
 npx tsc --project electron/tsconfig.json
 
-# Rename .js files to .cjs for CommonJS compatibility
-cd electron/dist
-for file in *.js; do
-  if [[ -f "$file" ]]; then
-    mv "$file" "${file%.js}.cjs"
-  fi
-done
-cd ../..
-
 # Build macOS app
 echo "🍎 Building macOS app..."
 npx electron-builder --mac --config electron.config.cjs
 
 echo "✅ macOS app build complete!"
 echo "📁 Output: dist-electron/"
+echo ""
+echo "Generated files:"
+ls -la dist-electron/ | grep -E '\.(dmg|zip|app)' || echo "No app files found yet - check for errors above"
