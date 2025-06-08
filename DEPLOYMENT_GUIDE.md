@@ -3,9 +3,10 @@
 ## 修正済みの問題
 
 ✅ **ES Module設定ファイルエラー**: `electron.config.js` → `electron.config.cjs`に変更  
-✅ **CommonJS互換性**: TypeScriptコンパイル設定を最適化  
-✅ **ビルドスクリプト**: ファイル拡張子とパス参照を修正  
-✅ **macOS権限設定**: `entitlements.mac.plist`を追加  
+✅ **package.json依存関係エラー**: electron/electron-builderをdevDependenciesに自動移動  
+✅ **設定ファイル構造エラー**: 無効な`main`プロパティを削除  
+✅ **ビルドプロセス最適化**: エラーハンドリングと自動復元機能を追加  
+✅ **環境変数設定**: メモリ制限とコード署名の最適化  
 
 ## ローカルビルド手順
 
