@@ -34,7 +34,8 @@ function createMainWindow(): void {
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
     
-    if (isDev) {
+    // Only open dev tools in development if explicitly requested
+    if (isDev && process.env.ELECTRON_DEBUG === 'true') {
       mainWindow?.webContents.openDevTools();
     }
   });
