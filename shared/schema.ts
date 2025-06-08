@@ -32,12 +32,30 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  password: varchar("password"), // For local auth
+  authProvider: varchar("auth_provider").default("replit"), // "replit" or "local"
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// Local auth schemas
+export const loginSchema = z.object({
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(6, "パスワードは6文字以上で入力してください"),
+});
+
+export const registerSchema = z.object({
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(6, "パスワードは6文字以上で入力してください"),
+  firstName: z.string().min(1, "名前を入力してください"),
+  lastName: z.string().optional(),
+});
+
+export type LoginData = z.infer<typeof loginSchema>;
+export type RegisterData = z.infer<typeof registerSchema>;
 
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),

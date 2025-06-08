@@ -6,9 +6,13 @@ import {
   type UpdateTask,
   type User,
   type UpsertUser,
+  type LoginData,
+  type RegisterData,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
+import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
 
 // Interface for storage operations
 export interface IStorage {
@@ -16,6 +20,11 @@ export interface IStorage {
   // (IMPORTANT) these user operations are mandatory for Replit Auth.
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Local auth operations
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createLocalUser(userData: RegisterData): Promise<User>;
+  verifyPassword(email: string, password: string): Promise<User | null>;
   
   // Task operations
   getTasks(userId: string): Promise<Task[]>;
@@ -50,6 +59,40 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  // Local auth operations
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createLocalUser(userData: RegisterData): Promise<User> {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const userId = nanoid();
+    
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: userId,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        password: hashedPassword,
+        authProvider: "local",
+      })
+      .returning();
+    return user;
+  }
+
+  async verifyPassword(email: string, password: string): Promise<User | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user || !user.password || user.authProvider !== "local") {
+      return null;
+    }
+    
+    const isValid = await bcrypt.compare(password, user.password);
+    return isValid ? user : null;
   }
 
   // Task operations
