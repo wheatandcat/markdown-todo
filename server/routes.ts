@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTaskSchema, updateTaskSchema, users } from "@shared/schema";
+import { insertTaskSchema, updateTaskSchema, users, loginSchema, registerSchema } from "@shared/schema";
 import { db } from "./db";
 import { z } from "zod";
 
@@ -13,7 +13,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -21,10 +21,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
+
+  // Local auth routes
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const validatedData = registerSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        res.status(400).json({ message: "このメールアドレスは既に登録されています" });
+        return;
+      }
+      
+      const user = await storage.createLocalUser(validatedData);
+      
+      // Create session for the new user
+      req.login({ id: user.id, isLocal: true }, (err) => {
+        if (err) {
+          res.status(500).json({ message: "ログインに失敗しました" });
+          return;
+        }
+        res.json({ user: { id: user.id, email: user.email, firstName: user.firstName } });
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "入力データが無効です", errors: error.errors });
+      } else {
+        console.error("Registration error:", error);
+        res.status(500).json({ message: "登録に失敗しました" });
+      }
+    }
+  });
+
+  app.post('/api/auth/local-login', async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      const user = await storage.verifyPassword(validatedData.email, validatedData.password);
+      if (!user) {
+        res.status(401).json({ message: "メールアドレスまたはパスワードが正しくありません" });
+        return;
+      }
+      
+      // Create session for the user
+      req.login({ id: user.id, isLocal: true }, (err) => {
+        if (err) {
+          res.status(500).json({ message: "ログインに失敗しました" });
+          return;
+        }
+        res.json({ user: { id: user.id, email: user.email, firstName: user.firstName } });
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "入力データが無効です", errors: error.errors });
+      } else {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "ログインに失敗しました" });
+      }
+    }
+  });
   // Get all tasks
   app.get("/api/tasks", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const tasks = await storage.getTasks(userId);
       res.json(tasks);
     } catch (error) {
@@ -35,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get active tasks
   app.get("/api/tasks/active", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const tasks = await storage.getActiveTasks(userId);
       res.json(tasks);
     } catch (error) {
@@ -46,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get completed tasks
   app.get("/api/tasks/completed", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const tasks = await storage.getCompletedTasks(userId);
       res.json(tasks);
     } catch (error) {
@@ -57,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get timer tasks
   app.get("/api/tasks/timers", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const tasks = await storage.getTimerTasks(userId);
       res.json(tasks);
     } catch (error) {
@@ -68,7 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create task
   app.post("/api/tasks", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const validatedData = insertTaskSchema.parse(req.body);
       const task = await storage.createTask(validatedData, userId);
       res.json(task);
@@ -84,7 +144,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update task
   app.patch("/api/tasks/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const id = parseInt(req.params.id);
       const validatedData = updateTaskSchema.parse(req.body);
       const task = await storage.updateTask(id, validatedData, userId);
@@ -107,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete task
   app.delete("/api/tasks/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteTask(id, userId);
       
@@ -125,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bulk create tasks from markdown
   app.post("/api/tasks/markdown", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.isLocal ? req.user.id : req.user.claims.sub;
       const { markdownContent } = req.body;
       
       if (typeof markdownContent !== 'string') {
