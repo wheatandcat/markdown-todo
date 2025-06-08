@@ -54,13 +54,17 @@ function createMainWindow(): void {
 function startServer(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (isDev) {
-      // In development, assume server is already running
+      // In development, check if server is running and resolve immediately
+      console.log('Development mode: assuming server is already running');
       resolve();
       return;
     }
 
     // In production, start the server process
-    serverProcess = spawn('node', [join(__dirname, '../server/index.js')], {
+    const serverPath = join(__dirname, '../../dist/index.js');
+    console.log(`Starting server from: ${serverPath}`);
+    
+    serverProcess = spawn('node', [serverPath], {
       env: { ...process.env, NODE_ENV: 'production' },
       stdio: 'pipe'
     });
