@@ -7,7 +7,7 @@ let mainWindow: BrowserWindow | null = null;
 let serverProcess: ChildProcess | null = null;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-const PORT = parseInt(process.env.PORT || "5000", 10);
+const PORT = parseInt(process.env.ELECTRON_PORT || "5001", 10); // Use different port for Electron
 
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
@@ -29,7 +29,7 @@ function createMainWindow(): void {
   let startUrl: string;
   
   if (isDev) {
-    startUrl = `http://localhost:${PORT}`;
+    startUrl = `http://localhost:5000`; // Always use 5000 in dev mode
   } else {
     // Try multiple paths for packaged app
     const fs = require('fs');
@@ -136,7 +136,10 @@ async function checkServerConnection(): Promise<boolean> {
   return new Promise((resolve) => {
     const http = require('http');
     
-    const req = http.get(`http://localhost:${PORT}`, (res: any) => {
+    // In development, check port 5000. In production, check our own port
+    const checkPort = isDev ? 5000 : PORT;
+    
+    const req = http.get(`http://localhost:${checkPort}`, (res: any) => {
       resolve(true); // Server is responding
     });
     
@@ -163,7 +166,7 @@ function startServer(): Promise<void> {
     }
 
     if (isDev) {
-      console.log('Development mode: No external server found');
+      console.log('Development mode: External server required on port 5000');
       reject(new Error('Please start the development server first with: npm run dev'));
       return;
     }
