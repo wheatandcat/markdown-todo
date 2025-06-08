@@ -29,7 +29,17 @@ function createMainWindow(): void {
     ? `http://localhost:${PORT}` 
     : `file://${join(__dirname, '../dist/index.html')}`;
   
+  console.log(`Loading URL: ${startUrl}`);
   mainWindow.loadURL(startUrl);
+
+  // Debug: Log load events
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    console.error(`Failed to load ${validatedURL}: ${errorCode} - ${errorDescription}`);
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('Page loaded successfully');
+  });
 
   // Suppress console warnings in production
   if (!isDev) {
@@ -44,8 +54,8 @@ function createMainWindow(): void {
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
     
-    // Only open dev tools in development if explicitly requested
-    if (isDev && process.env.ELECTRON_DEBUG === 'true') {
+    // Always open dev tools in development for debugging
+    if (isDev) {
       mainWindow?.webContents.openDevTools();
     }
   });
