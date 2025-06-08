@@ -55,6 +55,14 @@ ls -la dist-electron/
 sh ./scripts/build-electron-final.sh
 ```
 
+### エラー: Electronアプリで白い画面が表示される
+**原因**: パッケージ化されたアプリでのファイルパス不整合、静的ファイル配信の問題  
+**解決方法**: 白い画面修正版を含む最終ビルドスクリプトを使用
+```bash
+sh ./scripts/build-electron-final.sh
+```
+**詳細**: `ELECTRON_WHITE_SCREEN_FIX.md`を参照
+
 ### エラー: "Cannot find module"
 ```bash
 # 依存関係を再インストール
