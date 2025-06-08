@@ -99,19 +99,31 @@ REPLIT_DOMAINS=your-domain.replit.app
 
 ## 🔄 開発ワークフロー
 
+### Replit環境
 ```bash
-# 開発開始
+# Web開発（ポート5000）
 npm run dev
-
-# Electron 開発
-./scripts/dev-electron.sh
-
-# Electron のみ起動
-./scripts/electron-only.sh
 
 # データベース更新
 npm run db:push
 ```
+
+### ローカル環境
+```bash
+# ローカル開発（ポート3001で競合回避）
+./scripts/dev-local.sh
+
+# Electron開発（自動ポート検出）
+./scripts/dev-electron.sh
+
+# Electronのみ起動
+./scripts/electron-only.sh
+```
+
+### ポート競合の解決
+- **Replit**: ポート5000（固定）
+- **ローカル**: ポート3001（自動設定）
+- **本番**: 環境変数PORT使用
 
 ## 📝 今後の拡張可能性
 
