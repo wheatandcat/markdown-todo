@@ -10,12 +10,12 @@ export CSC_IDENTITY_AUTO_DISCOVERY=false
 # Clean everything
 rm -rf dist-electron dist electron/dist
 
-# Apply package.json fix
-./scripts/fix-build-deps.sh
-
-# Build web application
+# Build web application first (before any package.json changes)
 echo "📦 Building web application..."
 npm run build
+
+# Apply package.json fix only for electron-builder
+./scripts/fix-build-deps.sh
 
 # Compile Electron files as CommonJS
 echo "⚙️ Compiling Electron files..."

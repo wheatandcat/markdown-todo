@@ -12,7 +12,8 @@ module.exports = {
     '!node_modules/electron-builder/**/*'
   ],
   extraMetadata: {
-    main: 'electron/dist/main.js'
+    main: 'electron/dist/main.js',
+    type: undefined
   },
   mac: {
     category: 'public.app-category.productivity',

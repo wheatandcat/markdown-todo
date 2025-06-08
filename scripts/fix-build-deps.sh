@@ -15,6 +15,7 @@ cat > package.json.tmp << 'EOF'
   "author": "Task Manager Team",
   "main": "electron/dist/main.js",
   "homepage": "./",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
