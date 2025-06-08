@@ -1,181 +1,374 @@
-# スマートタスク管理 - Smart Task Manager
+<div align="center">
 
-Markdownで作成したタスクが1時間後に自動完了する、生産性を向上させるタスク管理アプリケーションです。
+# 🚀 スマートタスク管理
+### *Smart Task Manager*
 
-## 主な機能
+<img src="https://img.shields.io/badge/React-18.0-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React">
+<img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+<img src="https://img.shields.io/badge/PostgreSQL-15.0-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+<img src="https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
 
-### 🚀 デュアル認証システム
-- **メールアドレス認証**: 独自のアカウント作成・ログイン
-- **Replit認証**: Replitアカウントでのワンクリックログイン
+**Markdownで作成したタスクが1時間後に自動完了する、生産性を向上させる次世代タスク管理システム**
+
+[🎯 デモを見る](#) • [📖 ドキュメント](#技術スタック) • [🚀 今すぐ始める](#開発環境セットアップ)
+
+---
+
+</div>
+
+## ✨ 主な機能
+
+<table>
+<tr>
+<td width="50%">
+
+### 🔐 デュアル認証システム
+- 🌟 **メールアドレス認証**: 独自アカウントでセキュアログイン
+- ⚡ **Replit認証**: ワンクリック簡単ログイン
+- 🛡️ **セッション管理**: 安全なユーザーデータ保護
 
 ### 📝 Markdownタスク管理
-- Markdownエディターでタスクを作成・編集
-- チェックボックス形式でタスクステータス管理
-- リアルタイムプレビュー機能
+- ✏️ **リアルタイムエディター**: ライブプレビュー機能
+- ☑️ **チェックボックス記法**: `- [ ]` / `- [x]` 対応
+- 🔄 **一括インポート**: Markdownからタスク自動生成
+
+</td>
+<td width="50%">
 
 ### ⏰ 自動完了システム
-- チェックしたタスクが1時間後に自動的に完了状態に変更
-- タイマー機能付きタスクの進捗追跡
+- ⏲️ **1時間タイマー**: チェック後自動完了
+- 📈 **進捗追跡**: リアルタイム状態更新
+- 🎯 **集中力向上**: 達成感を促進する仕組み
 
-### 📊 タスク分類
-- **アクティブタスク**: 進行中のタスク
-- **完了タスク**: 完了済みのタスク  
-- **タイマータスク**: 1時間カウントダウン中のタスク
+### 📊 インテリジェント分類
+- 🟢 **アクティブタスク**: 進行中タスクの管理
+- ✅ **完了タスク**: 達成済みタスクの履歴
+- ⏳ **タイマータスク**: カウントダウン中タスク
 
-### 🎨 モダンUI/UX
-- 日本語対応インターフェース
-- ダークモード/ライトモード切替
-- レスポンシブデザイン（モバイル対応）
-- shadcn/ui + Tailwind CSSによる美しいデザイン
+</td>
+</tr>
+</table>
 
-## 技術スタック
+---
 
-### フロントエンド
-- **React 18** + **TypeScript**
-- **Vite** - 高速開発サーバー
-- **TanStack Query** - データフェッチング・キャッシュ管理
-- **wouter** - 軽量ルーティング
-- **React Hook Form** + **Zod** - フォーム管理・バリデーション
-- **shadcn/ui** - UIコンポーネントライブラリ
-- **Tailwind CSS** - スタイリング
-- **Lucide React** - アイコン
+## 🎨 美しいUI/UX
 
-### バックエンド
-- **Node.js** + **Express**
-- **TypeScript**
-- **Drizzle ORM** - タイプセーフなORM
-- **PostgreSQL** - データベース
-- **bcryptjs** - パスワードハッシュ化
-- **express-session** - セッション管理
+<div align="center">
 
-### 認証
-- **Replit Auth (OpenID Connect)** - Replitアカウント認証
-- **Passport.js** - 認証ミドルウェア
-- **ローカル認証** - メールアドレス・パスワード認証
+| 🌙 ダークモード | 📱 レスポンシブ | 🎯 日本語対応 | ⚡ 高速表示 |
+|:---:|:---:|:---:|:---:|
+| 目に優しい暗色テーマ | モバイル完全対応 | 完全日本語インターフェース | 瞬時ロード・更新 |
 
-## データベース設計
+</div>
 
-### Users テーブル
-```sql
-- id: varchar (primary key)
-- email: varchar (unique)
-- firstName: varchar
-- lastName: varchar
-- profileImageUrl: varchar
-- authType: varchar ('replit' | 'local')
-- passwordHash: varchar (ローカル認証用)
-- createdAt: timestamp
-- updatedAt: timestamp
+## 🛠️ 技術スタック
+
+<div align="center">
+
+### Frontend Architecture
+```mermaid
+graph TD
+    A[React 18 + TypeScript] --> B[TanStack Query]
+    A --> C[wouter Router]
+    A --> D[React Hook Form + Zod]
+    B --> E[shadcn/ui Components]
+    C --> E
+    D --> E
+    E --> F[Tailwind CSS]
 ```
 
-### Tasks テーブル
-```sql
-- id: serial (primary key)
-- userId: varchar (foreign key)
-- text: text
-- completed: boolean
-- checkedAt: bigint (Unix timestamp)
-- createdAt: timestamp
-- updatedAt: timestamp
+</div>
+
+<table>
+<tr>
+<td width="33%">
+
+#### 🎨 **Frontend**
+- ![React](https://img.shields.io/badge/React-18.0-61DAFB?style=flat-square&logo=react) **React 18** + **TypeScript**
+- ![Vite](https://img.shields.io/badge/Vite-4.0-646CFF?style=flat-square&logo=vite) **Vite** - Lightning fast dev server
+- ![TanStack](https://img.shields.io/badge/TanStack-Query-FF4154?style=flat-square) **TanStack Query** - Smart data fetching
+- ![Wouter](https://img.shields.io/badge/wouter-Router-blue?style=flat-square) **wouter** - Lightweight routing
+- ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css) **Tailwind CSS** + **shadcn/ui**
+
+</td>
+<td width="33%">
+
+#### ⚙️ **Backend**
+- ![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=flat-square&logo=node.js) **Node.js** + **Express**
+- ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript) **TypeScript** - Type safety
+- ![Drizzle](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=flat-square) **Drizzle ORM** - Type-safe database
+- ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.x-4169E1?style=flat-square&logo=postgresql) **PostgreSQL** - Robust data storage
+
+</td>
+<td width="33%">
+
+#### 🔐 **Authentication**
+- ![OpenID](https://img.shields.io/badge/OpenID-Connect-orange?style=flat-square) **Replit Auth** (OpenID Connect)
+- ![Passport](https://img.shields.io/badge/Passport.js-Auth-34E27A?style=flat-square) **Passport.js** - Auth middleware
+- ![bcrypt](https://img.shields.io/badge/bcryptjs-Hash-red?style=flat-square) **bcryptjs** - Password security
+- 🏠 **Local Auth** - Email/password system
+
+</td>
+</tr>
+</table>
+
+## 🗄️ データベース設計
+
+<div align="center">
+
+```mermaid
+erDiagram
+    Users ||--o{ Tasks : owns
+    Users {
+        varchar id PK
+        varchar email UK
+        varchar firstName
+        varchar lastName
+        varchar profileImageUrl
+        varchar authType
+        varchar passwordHash
+        timestamp createdAt
+        timestamp updatedAt
+    }
+    Tasks {
+        serial id PK
+        varchar userId FK
+        text text
+        boolean completed
+        bigint checkedAt
+        timestamp createdAt
+        timestamp updatedAt
+    }
+    Sessions {
+        varchar sid PK
+        jsonb sess
+        timestamp expire
+    }
 ```
 
-### Sessions テーブル
+</div>
+
+<table>
+<tr>
+<td width="33%">
+
+#### 👥 **Users Table**
 ```sql
-- sid: varchar (primary key)
-- sess: jsonb
-- expire: timestamp
+id          VARCHAR    PK
+email       VARCHAR    UNIQUE
+firstName   VARCHAR
+lastName    VARCHAR
+authType    VARCHAR    ('replit'|'local')
+passwordHash VARCHAR   (for local auth)
+createdAt   TIMESTAMP
+updatedAt   TIMESTAMP
 ```
 
-## API エンドポイント
+</td>
+<td width="33%">
 
-### 認証
-- `GET /api/auth/user` - 現在のユーザー情報取得
-- `POST /api/auth/register` - 新規ユーザー登録
-- `POST /api/auth/local-login` - ローカルログイン
-- `GET /api/login` - Replitログイン開始
-- `GET /api/logout` - ログアウト
+#### ✅ **Tasks Table**
+```sql
+id         SERIAL     PK
+userId     VARCHAR    FK → Users(id)
+text       TEXT
+completed  BOOLEAN
+checkedAt  BIGINT     (Unix timestamp)
+createdAt  TIMESTAMP
+updatedAt  TIMESTAMP
+```
 
-### タスク管理
-- `GET /api/tasks` - 全タスク取得
-- `GET /api/tasks/active` - アクティブタスク取得
-- `GET /api/tasks/completed` - 完了タスク取得
-- `GET /api/tasks/timers` - タイマータスク取得
-- `POST /api/tasks` - タスク作成
-- `PATCH /api/tasks/:id` - タスク更新
-- `DELETE /api/tasks/:id` - タスク削除
-- `POST /api/tasks/markdown` - Markdownからタスク一括作成
+</td>
+<td width="33%">
 
-## 開発環境セットアップ
+#### 🔐 **Sessions Table**
+```sql
+sid       VARCHAR    PK
+sess      JSONB      (session data)
+expire    TIMESTAMP  (auto cleanup)
+```
 
-### 前提条件
-- Node.js 18以上
-- PostgreSQL データベース
+</td>
+</tr>
+</table>
 
-### 環境変数
+## 🔌 API エンドポイント
+
+<table>
+<tr>
+<td width="50%">
+
+### 🔐 **Authentication API**
+```http
+GET    /api/auth/user        # 現在のユーザー情報
+POST   /api/auth/register    # 新規ユーザー登録  
+POST   /api/auth/local-login # ローカルログイン
+GET    /api/login            # Replitログイン開始
+GET    /api/logout           # ログアウト
+```
+
+</td>
+<td width="50%">
+
+### ✅ **Task Management API**
+```http
+GET    /api/tasks            # 全タスク取得
+GET    /api/tasks/active     # アクティブタスク
+GET    /api/tasks/completed  # 完了タスク
+GET    /api/tasks/timers     # タイマータスク
+POST   /api/tasks            # タスク作成
+PATCH  /api/tasks/:id        # タスク更新
+DELETE /api/tasks/:id        # タスク削除
+POST   /api/tasks/markdown   # Markdown一括作成
+```
+
+</td>
+</tr>
+</table>
+
+## 🚀 開発環境セットアップ
+
+<div align="center">
+
+### クイックスタート
+
+![Setup](https://img.shields.io/badge/Setup-3_Steps-brightgreen?style=for-the-badge)
+![Time](https://img.shields.io/badge/Time-5_Minutes-blue?style=for-the-badge)
+
+</div>
+
+<table>
+<tr>
+<td width="33%">
+
+#### 📋 **前提条件**
+- ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js) Node.js 18以上
+- ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=flat&logo=postgresql) PostgreSQL データベース
+- ![Git](https://img.shields.io/badge/Git-Latest-F05032?style=flat&logo=git) Git (クローン用)
+
+</td>
+<td width="33%">
+
+#### ⚙️ **環境変数設定**
 ```bash
-DATABASE_URL=postgresql://username:password@localhost:5432/database
+DATABASE_URL=postgresql://user:pass@localhost:5432/db
 SESSION_SECRET=your-session-secret
 REPL_ID=your-repl-id
 ISSUER_URL=https://replit.com/oidc
 REPLIT_DOMAINS=your-domain.replit.app
 ```
 
-### インストール・起動
+</td>
+<td width="33%">
+
+#### 🏃‍♂️ **実行手順**
 ```bash
-# 依存関係インストール
+# 1️⃣ クローン & インストール
+git clone <repository>
 npm install
 
-# データベースマイグレーション
+# 2️⃣ データベース初期化
 npm run db:push
 
-# 開発サーバー起動
+# 3️⃣ 開発サーバー起動
 npm run dev
 ```
 
-## ディレクトリ構成
-
-```
-├── client/                 # フロントエンド
-│   └── src/
-│       ├── components/     # Reactコンポーネント
-│       ├── hooks/         # カスタムHooks
-│       ├── lib/           # ユーティリティ
-│       └── pages/         # ページコンポーネント
-├── server/                # バックエンド
-│   ├── index.ts          # サーバーエントリーポイント
-│   ├── routes.ts         # APIルート
-│   ├── storage.ts        # データアクセス層
-│   ├── db.ts             # データベース接続
-│   └── replitAuth.ts     # Replit認証設定
-├── shared/               # 共有型定義
-│   └── schema.ts         # Drizzle スキーマ
-└── package.json
-```
-
-## 主な特徴
-
-### 1. デュアル認証システム
-ユーザーは好みに応じて2つの認証方法から選択可能：
-- Replitアカウントでの簡単ログイン
-- メールアドレス・パスワードでの独立したアカウント
-
-### 2. 自動タスク完了機能
-チェックされたタスクは1時間後に自動的に完了状態に移行。集中力を維持しながら達成感を得られる仕組み。
-
-### 3. Markdownベースエディター
-使い慣れたMarkdown記法でタスクを作成。チェックボックス記法（`- [ ]` / `- [x]`）に対応。
-
-### 4. マルチユーザー対応
-各ユーザーは独立したタスクリストを持ち、他のユーザーのデータにアクセスできない安全な設計。
-
-## ライセンス
-
-このプロジェクトはMITライセンスの下で公開されています。
-
-## 貢献
-
-プルリクエストや課題報告を歓迎します。開発に参加される方は、まずissueで議論してください。
+</td>
+</tr>
+</table>
 
 ---
 
-**生産性を向上させる新しいタスク管理体験をお楽しみください！**
+### 🎯 **ワンコマンド起動**
+```bash
+git clone <your-repo> && cd smart-task-manager && npm install && npm run db:push && npm run dev
+```
+
+## 📁 プロジェクト構成
+
+<div align="center">
+
+```
+📁 smart-task-manager/
+┣ 📁 client/                    # 🎨 Frontend Application
+┃ ┗ 📁 src/
+┃   ┣ 📁 components/            # 🧩 React Components
+┃   ┣ 📁 hooks/                 # 🪝 Custom Hooks
+┃   ┣ 📁 lib/                   # 🛠️ Utilities & Helpers  
+┃   ┗ 📁 pages/                 # 📄 Page Components
+┣ 📁 server/                    # ⚙️ Backend Services
+┃ ┣ 📄 index.ts                 # 🚀 Server Entry Point
+┃ ┣ 📄 routes.ts                # 🛣️ API Routes
+┃ ┣ 📄 storage.ts               # 💾 Data Access Layer
+┃ ┣ 📄 db.ts                    # 🗄️ Database Connection
+┃ ┗ 📄 replitAuth.ts            # 🔐 Authentication Setup
+┣ 📁 shared/                    # 🤝 Shared Resources
+┃ ┗ 📄 schema.ts                # 📋 Type Definitions
+┣ 📄 package.json               # 📦 Dependencies
+┗ 📄 README.md                  # 📖 Documentation
+```
+
+</div>
+
+---
+
+## 🌟 主な特徴
+
+<div align="center">
+
+| 🔐 **デュアル認証** | ⏰ **自動完了** | 📝 **Markdown** | 👥 **マルチユーザー** |
+|:---:|:---:|:---:|:---:|
+| Replit & ローカル認証 | 1時間後自動完了 | チェックボックス記法 | 独立したデータ管理 |
+| 2つの認証方法から選択 | 集中力維持と達成感 | 使い慣れた記法 | セキュアなユーザー分離 |
+
+</div>
+
+---
+
+## 🤝 コントリビューション
+
+<div align="center">
+
+![Contributors](https://img.shields.io/badge/Contributors-Welcome-brightgreen?style=for-the-badge)
+![Issues](https://img.shields.io/badge/Issues-Open-blue?style=for-the-badge)
+![PRs](https://img.shields.io/badge/PRs-Welcome-orange?style=for-the-badge)
+
+### 貢献方法
+
+1. 🍴 **Fork** このリポジトリ
+2. 🌿 **ブランチ作成** (`git checkout -b feature/amazing-feature`)
+3. 💾 **コミット** (`git commit -m 'Add amazing feature'`)
+4. 📤 **プッシュ** (`git push origin feature/amazing-feature`)
+5. 🔀 **プルリクエスト作成**
+
+</div>
+
+---
+
+## 📄 ライセンス
+
+<div align="center">
+
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+このプロジェクトは **MIT License** の下で公開されています
+
+</div>
+
+---
+
+<div align="center">
+
+## 🎯 **生産性を向上させる新しいタスク管理体験をお楽しみください！**
+
+### Made with ❤️ by developers, for developers
+
+[![Star this repo](https://img.shields.io/badge/⭐-Star_this_repo-yellow?style=for-the-badge)](/)
+[![Follow](https://img.shields.io/badge/👀-Follow_for_updates-blue?style=for-the-badge)](/)
+
+---
+
+*🚀 Let's build amazing productivity tools together! 🚀*
+
+</div>
