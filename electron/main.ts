@@ -6,7 +6,7 @@ let mainWindow: BrowserWindow | null = null;
 let serverProcess: ChildProcess | null = null;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-const PORT = 5000;
+const PORT = parseInt(process.env.PORT || "5000", 10);
 
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
