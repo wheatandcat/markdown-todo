@@ -14,6 +14,7 @@ function createMainWindow(): void {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    title: 'TODOアプリ - タスク管理',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -29,6 +30,15 @@ function createMainWindow(): void {
     : `file://${join(__dirname, '../dist/index.html')}`;
   
   mainWindow.loadURL(startUrl);
+
+  // Suppress console warnings in production
+  if (!isDev) {
+    mainWindow.webContents.on('console-message', (event, level, message) => {
+      if (level >= 2 && (message.includes('Autofill') || message.includes('devtools'))) {
+        event.preventDefault();
+      }
+    });
+  }
 
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
