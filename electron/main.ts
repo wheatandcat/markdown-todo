@@ -30,19 +30,50 @@ function createMainWindow(): void {
     : `file://${join(__dirname, '../dist/index.html')}`;
   
   console.log(`Loading URL: ${startUrl}`);
+  
+  // Add timeout for loading
+  const loadTimeout = setTimeout(() => {
+    console.error('Page load timeout - showing error page');
+    mainWindow?.loadFile(join(__dirname, '../assets/error.html'));
+  }, 10000);
+
   mainWindow.loadURL(startUrl);
 
   // Debug: Log load events
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    clearTimeout(loadTimeout);
     console.error(`Failed to load ${validatedURL}: ${errorCode} - ${errorDescription}`);
+    
+    // Show error page for connection issues
+    if (errorCode === -102 || errorCode === -7) { // Connection refused or timed out
+      const errorHtml = `
+        <html>
+          <head><title>Connection Error</title></head>
+          <body style="font-family: system-ui; padding: 40px; text-align: center;">
+            <h1>サーバーに接続できません</h1>
+            <p>開発サーバーが起動していることを確認してください</p>
+            <p>Port: ${PORT}</p>
+            <p>URL: ${startUrl}</p>
+            <button onclick="location.reload()">再試行</button>
+          </body>
+        </html>
+      `;
+      mainWindow?.loadURL(`data:text/html,${encodeURIComponent(errorHtml)}`);
+    }
   });
 
   mainWindow.webContents.on('did-finish-load', () => {
+    clearTimeout(loadTimeout);
     console.log('Page loaded successfully');
   });
 
-  // Suppress console warnings in production
-  if (!isDev) {
+  // Log console messages in development
+  if (isDev) {
+    mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+      console.log(`Console [${level}]: ${message}`);
+    });
+  } else {
+    // Suppress console warnings in production
     mainWindow.webContents.on('console-message', (event, level, message) => {
       if (level >= 2 && (message.includes('Autofill') || message.includes('devtools'))) {
         event.preventDefault();
@@ -54,7 +85,7 @@ function createMainWindow(): void {
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
     
-    // Always open dev tools in development for debugging
+    // Open dev tools in development for debugging
     if (isDev) {
       mainWindow?.webContents.openDevTools();
     }
