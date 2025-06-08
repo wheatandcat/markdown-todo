@@ -1,0 +1,60 @@
+sh ./scripts/build-electron-final.sh
+🔨 Building Electron macOS app...
+📦 Building web application...
+
+> smart-task-manager@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 1839 modules transformed.
+../dist/public/index.html                   0.63 kB │ gzip:   0.38 kB
+../dist/public/assets/index-CKYqenLJ.css   68.11 kB │ gzip:  12.00 kB
+../dist/public/assets/index-Dsl_tt9D.js   477.96 kB │ gzip: 147.21 kB
+✓ built in 1.51s
+
+  dist/index.js  22.8kb
+
+⚡ Done in 8ms
+⚙️ Compiling Electron files...
+📄 Creating build package.json...
+🍎 Building macOS app...
+  • electron-builder  version=26.0.12 os=24.5.0
+  • loaded configuration  file=/Users/iinoyouhei/go/src/github.com/markdown-todo/electron.config.cjs
+  • writing effective config  file=dist-electron/builder-effective-config.yaml
+  • executing @electron/rebuild  electronVersion=36.4.0 arch=x64 buildFromSource=false appDir=./
+  • installing native dependencies  arch=x64
+  • preparing       moduleName=bufferutil arch=x64
+  • finished        moduleName=bufferutil arch=x64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=x64 electron=36.4.0 appOutDir=dist-electron/mac
+  • default Electron icon is used  reason=application icon is not set
+  • skipped macOS application code signing  reason=, see https://electron.build/code-signing CSC_IDENTITY_AUTO_DISCOVERY=false
+  • building        target=DMG arch=x64 file=dist-electron/スマートタスク管理-1.0.0.dmg
+  • executing @electron/rebuild  electronVersion=36.4.0 arch=arm64 buildFromSource=false appDir=./
+  • installing native dependencies  arch=arm64
+  • preparing       moduleName=bufferutil arch=arm64
+  • finished        moduleName=bufferutil arch=arm64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=arm64 electron=36.4.0 appOutDir=dist-electron/mac-arm64
+  • building block map  blockMapFile=dist-electron/スマートタスク管理-1.0.0.dmg.blockmap
+  • skipped macOS application code signing  reason=, see https://electron.build/code-signing CSC_IDENTITY_AUTO_DISCOVERY=false
+  • building        target=DMG arch=arm64 file=dist-electron/スマートタスク管理-1.0.0-arm64.dmg
+  • building block map  blockMapFile=dist-electron/スマートタスク管理-1.0.0-arm64.dmg.blockmap
+✅ Build completed successfully!
+📁 Generated files:
+  スマートタスク管理-1.0.0-arm64.dmg
+  スマートタスク管理-1.0.0.dmg
+  スマートタスク管理.app
+  スマートタスク管理 Helper (Plugin).app
+  スマートタスク管理 Helper (GPU).app
+  スマートタスク管理 Helper (Renderer).app
+  スマートタスク管理 Helper.app
+  スマートタスク管理.app
+  スマートタスク管理 Helper (Plugin).app
+  スマートタスク管理 Helper (GPU).app
+  スマートタスク管理 Helper (Renderer).app
+  スマートタスク管理 Helper.app
+📁 Build output: dist-electron/

@@ -9,7 +9,11 @@ module.exports = {
     'electron/dist/**/*',
     'node_modules/**/*',
     '!node_modules/electron/**/*',
-    '!node_modules/electron-builder/**/*'
+    '!node_modules/electron-builder/**/*',
+    '!**/{.git,.DS_Store,*.log,*.tmp}',
+    '!**/node_modules/*/{CHANGELOG.md,README.md,readme.md,changelog.md}',
+    '!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}',
+    '!**/node_modules/*.d.ts'
   ],
   extraMetadata: {
     main: 'electron/dist/main.js',

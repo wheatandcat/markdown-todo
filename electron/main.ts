@@ -18,7 +18,7 @@ function createMainWindow(): void {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: join(__dirname, 'preload.cjs'),
+      preload: join(__dirname, 'preload.js'),
     },
     titleBarStyle: 'hiddenInset',
     show: false,
@@ -27,9 +27,12 @@ function createMainWindow(): void {
   // Load the app
   const startUrl = isDev 
     ? `http://localhost:${PORT}` 
-    : `file://${join(__dirname, '../dist/index.html')}`;
+    : `file://${join(__dirname, '../dist/public/index.html')}`;
   
   console.log(`Loading URL: ${startUrl}`);
+  console.log(`__dirname: ${__dirname}`);
+  console.log(`isDev: ${isDev}`);
+  console.log(`app.isPackaged: ${app.isPackaged}`);
   
   // Add timeout for loading
   const loadTimeout = setTimeout(() => {
@@ -140,11 +143,15 @@ function startServer(): Promise<void> {
     }
 
     // Only try to start embedded server in packaged production app
-    const serverPath = join(process.resourcesPath, 'server', 'index.js');
+    const serverPath = join(process.resourcesPath, 'dist', 'index.js');
     console.log(`Starting embedded server from: ${serverPath}`);
     
     serverProcess = spawn('node', [serverPath], {
-      env: { ...process.env, NODE_ENV: 'production' },
+      env: { 
+        ...process.env, 
+        NODE_ENV: 'production',
+        PORT: PORT.toString()
+      },
       stdio: 'pipe'
     });
 
