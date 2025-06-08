@@ -14,15 +14,22 @@
 # Node.js バージョン確認
 node --version  # v20以上推奨
 
-# 必要パッケージインストール状況確認
-npm list electron electron-builder
+# ビルド設定テスト
+sh ./scripts/test-build-fix.sh
 ```
 
 ### 2. ビルド実行
 ```bash
-# クリーンビルド
+# 完全ビルド（自動的に依存関係を修正）
 sh ./scripts/build-electron.sh
 ```
+
+**ビルド内容**:
+- Web アプリケーションのプロダクションビルド
+- TypeScript→JavaScript コンパイル
+- package.json の依存関係自動修正
+- macOS用DMG/ZIPファイル生成
+- 元のpackage.json自動復元
 
 ### 3. ビルド成果物確認
 ```bash
