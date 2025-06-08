@@ -14,23 +14,13 @@ export default function Landing() {
           <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
             Markdownで作成したタスクが1時間後に自動完了する、生産性を向上させるタスク管理システム
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="px-8 py-4 text-lg"
-              onClick={() => window.location.href = '/login'}
-            >
-              メールでログイン
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="px-8 py-4 text-lg"
-              onClick={() => window.location.href = '/api/login'}
-            >
-              Replitでログイン
-            </Button>
-          </div>
+          <Button 
+            size="lg" 
+            className="px-8 py-4 text-lg"
+            onClick={() => window.location.href = '/login'}
+          >
+            はじめる
+          </Button>
         </div>
 
         {/* Features */}
@@ -133,23 +123,13 @@ export default function Landing() {
           <p className="text-lg text-slate-600 dark:text-slate-300 mb-8">
             タスク管理を変革した数千人のユーザーに参加しませんか
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="px-8 py-4 text-lg"
-              onClick={() => window.location.href = '/login'}
-            >
-              メールでログイン
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="px-8 py-4 text-lg"
-              onClick={() => window.location.href = '/api/login'}
-            >
-              Replitでログイン
-            </Button>
-          </div>
+          <Button 
+            size="lg" 
+            className="px-8 py-4 text-lg"
+            onClick={() => window.location.href = '/login'}
+          >
+            タスク管理を始める
+          </Button>
         </div>
       </div>
     </div>
