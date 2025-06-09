@@ -74,10 +74,6 @@ graph TD
 
 </div>
 
-<table>
-<tr>
-<td width="33%">
-
 #### 🎨 **Frontend**
 
 - ![React](https://img.shields.io/badge/React-18.0-61DAFB?style=flat-square&logo=react) **React 18** + **TypeScript**
@@ -86,9 +82,6 @@ graph TD
 - ![Wouter](https://img.shields.io/badge/wouter-Router-blue?style=flat-square) **wouter** - Lightweight routing
 - ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css) **Tailwind CSS** + **shadcn/ui**
 
-</td>
-<td width="33%">
-
 #### ⚙️ **Backend**
 
 - ![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=flat-square&logo=node.js) **Node.js** + **Express**
@@ -96,19 +89,12 @@ graph TD
 - ![Drizzle](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=flat-square) **Drizzle ORM** - Type-safe database
 - ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.x-4169E1?style=flat-square&logo=postgresql) **PostgreSQL** - Robust data storage
 
-</td>
-<td width="33%">
-
 #### 🔐 **Authentication**
 
 - ![OpenID](https://img.shields.io/badge/OpenID-Connect-orange?style=flat-square) **Replit Auth** (OpenID Connect)
 - ![Passport](https://img.shields.io/badge/Passport.js-Auth-34E27A?style=flat-square) **Passport.js** - Auth middleware
 - ![bcrypt](https://img.shields.io/badge/bcryptjs-Hash-red?style=flat-square) **bcryptjs** - Password security
 - 🏠 **Local Auth** - Email/password system
-
-</td>
-</tr>
-</table>
 
 ## 🗄️ データベース設計
 
@@ -146,10 +132,6 @@ erDiagram
 
 </div>
 
-<table>
-<tr>
-<td width="33%">
-
 #### 👥 **Users Table**
 
 ```sql
@@ -163,9 +145,6 @@ createdAt   TIMESTAMP
 updatedAt   TIMESTAMP
 ```
 
-</td>
-<td width="33%">
-
 #### ✅ **Tasks Table**
 
 ```sql
@@ -178,9 +157,6 @@ createdAt  TIMESTAMP
 updatedAt  TIMESTAMP
 ```
 
-</td>
-<td width="33%">
-
 #### 🔐 **Sessions Table**
 
 ```sql
@@ -189,15 +165,7 @@ sess      JSONB      (session data)
 expire    TIMESTAMP  (auto cleanup)
 ```
 
-</td>
-</tr>
-</table>
-
 ## 🔌 API エンドポイント
-
-<table>
-<tr>
-<td width="50%">
 
 ### 🔐 **Authentication API**
 
@@ -208,9 +176,6 @@ POST   /api/auth/local-login # ローカルログイン
 GET    /api/login            # Replitログイン開始
 GET    /api/logout           # ログアウト
 ```
-
-</td>
-<td width="50%">
 
 ### ✅ **Task Management API**
 
@@ -224,10 +189,6 @@ PATCH  /api/tasks/:id        # タスク更新
 DELETE /api/tasks/:id        # タスク削除
 POST   /api/tasks/markdown   # Markdown一括作成
 ```
-
-</td>
-</tr>
-</table>
 
 ## 🚀 開発環境セットアップ
 
