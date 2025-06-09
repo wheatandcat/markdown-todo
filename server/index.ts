@@ -57,14 +57,17 @@ app.use((req, res, next) => {
   }
 
   // Use different ports for different environments to avoid conflicts
-  // Development: 5000, Production: 5002, Electron: 5001
-  const defaultPort = app.get("env") === "development" ? "5000" : "5002";
+  // Development: 3001, Production: 5002, Electron: 5001
+  const defaultPort = app.get("env") === "development" ? "3001" : "5002";
   const port = parseInt(process.env.PORT || defaultPort, 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    }
+  );
 })();
