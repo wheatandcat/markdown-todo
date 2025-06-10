@@ -7,7 +7,7 @@ use tauri::Manager;
 
 // ポート設定
 const DEV_PORT: u16 = 3001;
-const PROD_PORT: u16 = 5002;
+const PROD_PORT: u16 = 5001;
 
 // サーバープロセスの状態管理
 struct ServerState {
@@ -25,8 +25,8 @@ fn check_server_connection(port: u16) -> bool {
     ).is_ok()
 }
 
-// サーバー起動
-fn start_server(is_dev: bool) -> Result<Option<Child>, Box<dyn std::error::Error>> {
+// サーバー起動（AppHandle付き）
+fn start_server_with_app_handle(is_dev: bool, app_handle: &tauri::AppHandle) -> Result<Option<Child>, Box<dyn std::error::Error>> {
     if is_dev {
         // 開発モードでは外部サーバー（port 3001）をチェック
         if check_server_connection(DEV_PORT) {
@@ -43,12 +43,42 @@ fn start_server(is_dev: bool) -> Result<Option<Child>, Box<dyn std::error::Error
         return Ok(None);
     }
 
+    // Tauriリソースからサーバーファイルを取得
+    if let Ok(resource_path) = app_handle.path().resource_dir() {
+        let server_file = resource_path.join("index.js");
+        if server_file.exists() {
+            println!("Starting server from resource: {:?}", server_file);
+            
+            let child = Command::new("node")
+                .arg(&server_file)
+                .env("NODE_ENV", "production")
+                .env("PORT", PROD_PORT.to_string())
+                .env("TAURI_ENV", "true")
+                .spawn()?;
+            
+            // サーバー起動待機
+            std::thread::sleep(std::time::Duration::from_secs(3));
+            
+            if check_server_connection(PROD_PORT) {
+                return Ok(Some(child));
+            }
+        }
+    }
+
+    // フォールバック: 従来のパス検索
+    start_server_fallback()
+}
+
+// サーバー起動（フォールバック）
+fn start_server_fallback() -> Result<Option<Child>, Box<dyn std::error::Error>> {
     // サーバー実行ファイルの検索
     let server_paths = [
         "./dist/index.js",
         "../dist/index.js",
         "./server/dist/index.js",
         "../server/dist/index.js",
+        "./index.js",  // Tauriバンドル内のリソース
+        "../index.js", // Tauriバンドル内のリソース
     ];
 
     for path in &server_paths {
@@ -59,6 +89,7 @@ fn start_server(is_dev: bool) -> Result<Option<Child>, Box<dyn std::error::Error
                 .arg(path)
                 .env("NODE_ENV", "production")
                 .env("PORT", PROD_PORT.to_string())
+                .env("TAURI_ENV", "true")
                 .spawn()?;
             
             // サーバー起動待機
@@ -100,7 +131,7 @@ fn main() {
             
             // サーバー起動
             tauri::async_runtime::spawn(async move {
-                match start_server(is_dev) {
+                match start_server_with_app_handle(is_dev, &app_handle) {
                     Ok(Some(_process)) => {
                         if let Ok(_state) = app_handle.state::<ServerState>().process.lock() {
                             // プロセスを状態に保存（実際の実装では適切な管理が必要）
@@ -116,6 +147,8 @@ fn main() {
                         // エラーダイアログ表示
                         if is_dev {
                             println!("Please start development server: npm run dev");
+                        } else {
+                            eprintln!("Server startup failed in production mode. Check if Node.js is installed and dist/index.js exists.");
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -6,13 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { registerSchema, type RegisterData } from "@shared/schema";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // 既にログイン済みの場合はホームページにリダイレクト
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLocation("/");
+    }
+  }, [isAuthenticated, setLocation]);
 
   const form = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
@@ -28,12 +38,20 @@ export default function Register() {
     setIsLoading(true);
     try {
       await apiRequest("POST", "/api/auth/register", data);
+      
+      // キャッシュを無効化して認証状態を再取得
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
+      
       toast({
         title: "登録成功",
         description: "アカウントが作成されました。タスク管理画面に移動します...",
       });
-      // Reload to trigger auth check
-      window.location.href = "/";
+      
+      // Tauriでも確実に動作するように、少し待ってから遷移
+      setTimeout(() => {
+        setLocation("/");
+      }, 100);
     } catch (error) {
       console.error("Registration error:", error);
       toast({

@@ -7,3 +7,4 @@ vite.config.ts.*
 dist-electron
 .env
 .env_copy
+create-rounded-icon.sh

@@ -3,6 +3,45 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// CORS設定 - Tauri環境とローカル開発対応
+const isTauriEnv = process.env.TAURI_ENV === "true";
+const isDev = process.env.NODE_ENV === "development";
+
+if (isTauriEnv || isDev) {
+  app.use((req, res, next) => {
+    // Tauriの場合はtauri://で始まるオリジンも許可
+    const allowedOrigins = isTauriEnv 
+      ? ['http://localhost:5001', 'http://127.0.0.1:5001', 'tauri://localhost'] 
+      : ['http://localhost:3001', 'http://localhost:5001', 'http://127.0.0.1:3001', 'http://127.0.0.1:5001'];
+    
+    const origin = req.headers.origin;
+    
+    if (isTauriEnv) {
+      // Tauriの場合は特定のオリジンまたはtauri://プロトコルを許可
+      if (!origin || origin.startsWith('tauri://') || allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin || 'tauri://localhost');
+      } else {
+        res.header('Access-Control-Allow-Origin', 'http://localhost:5001');
+      }
+    } else {
+      if (origin && allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+      }
+    }
+    
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
+  });
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -57,8 +96,13 @@ app.use((req, res, next) => {
   }
 
   // Use different ports for different environments to avoid conflicts
-  // Development: 3001, Production: 5002, Electron: 5001
-  const defaultPort = app.get("env") === "development" ? "3001" : "5002";
+  // Development: 3001, Production: 5002, Tauri: 5001
+  let defaultPort = "5002";
+  if (app.get("env") === "development") {
+    defaultPort = "3001";
+  } else if (process.env.TAURI_ENV === "true") {
+    defaultPort = "5001";
+  }
   const port = parseInt(process.env.PORT || defaultPort, 10);
   server.listen(
     {
