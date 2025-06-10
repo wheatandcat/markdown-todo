@@ -1,9 +1,0 @@
-{
-  "name": "smart-task-manager-electron",
-  "version": "1.0.0",
-  "description": "Electron main process for Smart Task Manager",
-  "main": "dist/main.js",
-  "type": "commonjs",
-  "author": "Task Manager Team",
-  "license": "MIT"
-}
