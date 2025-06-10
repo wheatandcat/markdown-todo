@@ -28,17 +28,15 @@ function Router() {
 
   return (
     <Switch>
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-        </>
-      )}
+      {/* 認証済みユーザー用ルート */}
+      {isAuthenticated && <Route path="/" component={Home} />}
+      
+      {/* 未認証ユーザー用ルート（認証状態に関係なく常に利用可能） */}
+      {!isAuthenticated && <Route path="/" component={Landing} />}
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      
+      {/* 404ページ */}
       <Route component={NotFound} />
     </Switch>
   );

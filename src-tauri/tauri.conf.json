@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "スマートタスク管理",
+  "version": "1.0.0",
+  "identifier": "com.smarttask.manager",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist/public",
+    "devUrl": "http://localhost:3001"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "TODOアプリ - タスク管理",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' http://localhost:5001 http://127.0.0.1:5001; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "../dist/index.js"
+    ]
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    },
+    "updater": {
+      "active": false
+    }
+  }
+}

@@ -10,6 +10,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Environment check endpoint
+  app.get('/api/health', (req, res) => {
+    res.json({ 
+      status: 'ok',
+      environment: process.env.NODE_ENV,
+      tauri: process.env.TAURI_ENV === "true",
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -20,6 +30,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
+  });
+
+  // Logout endpoint for local auth
+  app.post('/api/auth/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        res.status(500).json({ message: "ログアウトに失敗しました" });
+        return;
+      }
+      
+      // セッションを破棄
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          res.status(500).json({ message: "セッションの破棄に失敗しました" });
+          return;
+        }
+        
+        // Cookieもクリア
+        res.clearCookie('connect.sid');
+        res.json({ message: "ログアウトしました" });
+      });
+    });
   });
 
   // Local auth routes
@@ -39,10 +73,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create session for the new user
       req.login({ id: user.id, isLocal: true }, (err) => {
         if (err) {
+          console.error("Session creation error:", err);
           res.status(500).json({ message: "ログインに失敗しました" });
           return;
         }
-        res.json({ user: { id: user.id, email: user.email, firstName: user.firstName } });
+        console.log("Session created successfully for user:", user.id);
+        console.log("Session ID:", req.sessionID);
+        res.json({ 
+          user: { id: user.id, email: user.email, firstName: user.firstName },
+          sessionId: req.sessionID 
+        });
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -67,10 +107,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create session for the user
       req.login({ id: user.id, isLocal: true }, (err) => {
         if (err) {
+          console.error("Login session creation error:", err);
           res.status(500).json({ message: "ログインに失敗しました" });
           return;
         }
-        res.json({ user: { id: user.id, email: user.email, firstName: user.firstName } });
+        console.log("Login session created successfully for user:", user.id);
+        console.log("Session ID:", req.sessionID);
+        res.json({ 
+          user: { id: user.id, email: user.email, firstName: user.firstName },
+          sessionId: req.sessionID 
+        });
       });
     } catch (error) {
       if (error instanceof z.ZodError) {

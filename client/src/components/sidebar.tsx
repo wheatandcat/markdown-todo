@@ -20,7 +20,10 @@ interface SidebarProps {
   onTabChange?: (tab: string) => void;
 }
 
-export function Sidebar({ activeTab = "active", onTabChange }: SidebarProps = {}) {
+export function Sidebar({
+  activeTab = "active",
+  onTabChange,
+}: SidebarProps = {}) {
   const [localActiveTab, setLocalActiveTab] = useState(activeTab);
   const queryClient = useQueryClient();
   const { activeTasks, completedTasks } = useTasks();
@@ -28,7 +31,7 @@ export function Sidebar({ activeTab = "active", onTabChange }: SidebarProps = {}
   const { theme, setTheme } = useTheme();
 
   const currentTab = onTabChange ? activeTab : localActiveTab;
-  
+
   const handleTabClick = (tab: string) => {
     if (onTabChange) {
       onTabChange(tab);
@@ -51,8 +54,6 @@ export function Sidebar({ activeTab = "active", onTabChange }: SidebarProps = {}
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
-
-
 
   const navItems = [
     {

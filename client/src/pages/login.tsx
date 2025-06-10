@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -6,13 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { loginSchema, type LoginData } from "@shared/schema";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // 既にログイン済みの場合はホームページにリダイレクト
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLocation("/");
+    }
+  }, [isAuthenticated, setLocation]);
 
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -26,12 +36,47 @@ export default function Login() {
     setIsLoading(true);
     try {
       await apiRequest("POST", "/api/auth/local-login", data);
-      toast({
-        title: "ログイン成功",
-        description: "タスク管理画面に移動します...",
-      });
-      // Reload to trigger auth check
-      window.location.href = "/";
+      
+      // キャッシュを無効化して認証状態を再取得
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Tauriでは認証状態を確実に確認してから遷移
+      let retryCount = 0;
+      const maxRetries = 5;
+      
+      const checkAuthAndRedirect = async () => {
+        try {
+          const user = await queryClient.fetchQuery({
+            queryKey: ["/api/auth/user"],
+            retry: false,
+          });
+          
+          if (user) {
+            toast({
+              title: "ログイン成功",
+              description: "タスク管理画面に移動します...",
+            });
+            
+            setTimeout(() => {
+              setLocation("/");
+            }, 100);
+          } else if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(checkAuthAndRedirect, 200);
+          } else {
+            throw new Error("認証状態の確認に失敗しました");
+          }
+        } catch (error) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(checkAuthAndRedirect, 200);
+          } else {
+            throw error;
+          }
+        }
+      };
+      
+      await checkAuthAndRedirect();
     } catch (error) {
       console.error("Login error:", error);
       toast({
