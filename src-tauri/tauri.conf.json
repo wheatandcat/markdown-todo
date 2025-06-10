@@ -5,7 +5,7 @@
   "identifier": "com.smarttask.manager",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "npm run build && npm run build:server",
     "frontendDist": "../dist/public",
     "devUrl": "http://localhost:3001"
   },

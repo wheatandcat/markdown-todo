@@ -241,7 +241,7 @@ open http://localhost:3001
 
 ```bash
 # macOSアプリをビルド (.dmg)
-sh ./scripts/build-electron.sh
+RUST_LOG=debug ./src-tauri/target/release/smart-task-manager
 ```
 
 ### ✨ **ネイティブ機能**

@@ -9,10 +9,33 @@ async function throwIfResNotOk(res: Response) {
 
 // Tauri環境でのベースURL設定
 const getBaseUrl = () => {
-  // Tauriアプリかどうかを判定
-  if (typeof window !== 'undefined' && window.__TAURI__) {
-    return 'http://localhost:5001';
+  // Tauriアプリかどうかを判定（複数の方法で確認）
+  if (typeof window !== 'undefined') {
+    // デバッグ情報を出力
+    console.log('Environment detection:', {
+      hasTauri: !!window.__TAURI__,
+      protocol: window.location.protocol,
+      userAgent: navigator.userAgent,
+      href: window.location.href
+    });
+    
+    // 1. __TAURI__オブジェクトの存在確認
+    if (window.__TAURI__) {
+      console.log('Using Tauri environment - API base URL: http://localhost:5001');
+      return 'http://localhost:5001';
+    }
+    // 2. Tauriプロトコルの確認
+    if (window.location.protocol === 'tauri:') {
+      console.log('Using Tauri protocol - API base URL: http://localhost:5001');
+      return 'http://localhost:5001';
+    }
+    // 3. Tauri特有のユーザーエージェント確認
+    if (navigator.userAgent.includes('Tauri')) {
+      console.log('Using Tauri user agent - API base URL: http://localhost:5001');
+      return 'http://localhost:5001';
+    }
   }
+  console.log('Using web environment - API base URL: (empty)');
   return '';
 };
 
