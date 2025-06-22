@@ -9,11 +9,8 @@ import { StatsView } from "@/components/stats-view";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useTasks } from "@/hooks/use-tasks";
-import { useAuth } from "@/hooks/useAuth";
-import { queryClient } from "@/lib/queryClient";
-import { Menu, Plus, Save, Download, LogOut } from "lucide-react";
+import { Menu, Plus, Save, Download } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useLocation } from "wouter";
 
 export default function Home() {
   const [markdownContent, setMarkdownContent] = useState(`## 今日のタスク
@@ -37,38 +34,8 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
   const { toast } = useToast();
-  const { user, logout } = useAuth();
   const { syncMarkdownTasks } = useTasks();
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [, setLocation] = useLocation();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      
-      toast({
-        title: "ログアウト完了",
-        description: "TOP画面に移動します...",
-      });
-      
-      // ログアウト処理完了後、即座に画面を更新
-      setTimeout(() => {
-        window.location.replace("/");
-      }, 500);
-    } catch (error) {
-      console.error("Logout error:", error);
-      
-      toast({
-        title: "ログアウト",
-        description: "TOP画面に移動します...",
-      });
-      
-      // エラーの場合も画面を強制更新
-      setTimeout(() => {
-        window.location.replace("/");
-      }, 500);
-    }
-  };
 
   const handleSave = () => {
     localStorage.setItem("markdownContent", markdownContent);
@@ -160,14 +127,6 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
               </Button>
               <Button variant="outline" size="icon" onClick={handleExport} className="sm:hidden">
                 <Download className="w-4 h-4" />
-              </Button>
-
-              <Button variant="outline" size="sm" onClick={handleLogout} className="hidden sm:flex">
-                <LogOut className="w-4 h-4 mr-2" />
-                ログアウト
-              </Button>
-              <Button variant="outline" size="icon" onClick={handleLogout} className="sm:hidden">
-                <LogOut className="w-4 h-4" />
               </Button>
             </div>
           </div>

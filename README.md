@@ -6,12 +6,12 @@
 
 <img src="https://img.shields.io/badge/React-18.0-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React">
 <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
-<img src="https://img.shields.io/badge/PostgreSQL-15.0-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
-<img src="https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+<img src="https://img.shields.io/badge/SQLite-3.0-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+<img src="https://img.shields.io/badge/Tauri-2.0-FFC131?style=for-the-badge&logo=tauri&logoColor=white" alt="Tauri">
 
-**Markdown で作成したタスクが 1 時間後に自動完了する、生産性を向上させる次世代タスク管理システム**
+**Markdown で作成したタスクが 1 時間後に自動完了する、オフライン対応のシンプルなタスク管理アプリ**
 
-[🎯 デモを見る](https://cross-platform-todo-wheatandcat.replit.app/) • [📖 ドキュメント](#技術スタック) • [🚀 今すぐ始める](#開発環境セットアップ)
+📖 [ドキュメント](#技術スタック) • [🚀 今すぐ始める](#開発環境セットアップ) • [💻 macOSアプリ](#macos-アプリケーション)
 
 ---
 
@@ -19,11 +19,11 @@
 
 ## ✨ 主な機能
 
-### 🔐 デュアル認証システム
+### 💾 オフライン対応
 
-- 🌟 **メールアドレス認証**: 独自アカウントでセキュアログイン
-- ⚡ **Replit 認証**: ワンクリック簡単ログイン
-- 🛡️ **セッション管理**: 安全なユーザーデータ保護
+- 📱 **完全オフライン**: インターネット接続不要
+- 🗄️ **ローカルストレージ**: SQLiteでデータを安全に保存
+- 🔒 **プライバシー保護**: データは全てローカルに保存
 
 ### 📝 Markdown タスク管理
 
@@ -87,14 +87,13 @@ graph TD
 - ![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=flat-square&logo=node.js) **Node.js** + **Express**
 - ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript) **TypeScript** - Type safety
 - ![Drizzle](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=flat-square) **Drizzle ORM** - Type-safe database
-- ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.x-4169E1?style=flat-square&logo=postgresql) **PostgreSQL** - Robust data storage
+- ![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57?style=flat-square&logo=sqlite) **SQLite** - Lightweight local storage
 
-#### 🔐 **Authentication**
+#### 🖥️ **Desktop App**
 
-- ![OpenID](https://img.shields.io/badge/OpenID-Connect-orange?style=flat-square) **Replit Auth** (OpenID Connect)
-- ![Passport](https://img.shields.io/badge/Passport.js-Auth-34E27A?style=flat-square) **Passport.js** - Auth middleware
-- ![bcrypt](https://img.shields.io/badge/bcryptjs-Hash-red?style=flat-square) **bcryptjs** - Password security
-- 🏠 **Local Auth** - Email/password system
+- ![Tauri](https://img.shields.io/badge/Tauri-2.0-FFC131?style=flat-square&logo=tauri) **Tauri** - Native app framework
+- ![Rust](https://img.shields.io/badge/Rust-Latest-000000?style=flat-square&logo=rust) **Rust** - System-level performance
+- 🍎 **macOS Native** - Full system integration
 
 ## 🗄️ データベース設計
 
@@ -102,80 +101,36 @@ graph TD
 
 ```mermaid
 erDiagram
-    Users ||--o{ Tasks : owns
-    Users {
-        varchar id PK
-        varchar email UK
-        varchar firstName
-        varchar lastName
-        varchar profileImageUrl
-        varchar authType
-        varchar passwordHash
-        timestamp createdAt
-        timestamp updatedAt
-    }
     Tasks {
-        serial id PK
-        varchar userId FK
+        integer id PK
         text text
-        boolean completed
-        bigint checkedAt
-        timestamp createdAt
-        timestamp updatedAt
-    }
-    Sessions {
-        varchar sid PK
-        jsonb sess
-        timestamp expire
+        integer completed
+        integer checkedAt
+        integer completedAt
+        integer createdAt
     }
 ```
 
 </div>
 
-#### 👥 **Users Table**
+#### ✅ **Tasks Table (SQLite)**
 
 ```sql
-id          VARCHAR    PK
-email       VARCHAR    UNIQUE
-firstName   VARCHAR
-lastName    VARCHAR
-authType    VARCHAR    ('replit'|'local')
-passwordHash VARCHAR   (for local auth)
-createdAt   TIMESTAMP
-updatedAt   TIMESTAMP
+id           INTEGER   PRIMARY KEY AUTOINCREMENT
+text         TEXT      NOT NULL
+completed    INTEGER   NOT NULL DEFAULT 0  (0=false, 1=true)
+checkedAt    INTEGER   (Unix timestamp)
+completedAt  INTEGER   (Unix timestamp)
+createdAt    INTEGER   NOT NULL (Unix timestamp)
 ```
 
-#### ✅ **Tasks Table**
+### 🎯 **シンプルな設計**
 
-```sql
-id         SERIAL     PK
-userId     VARCHAR    FK → Users(id)
-text       TEXT
-completed  BOOLEAN
-checkedAt  BIGINT     (Unix timestamp)
-createdAt  TIMESTAMP
-updatedAt  TIMESTAMP
-```
-
-#### 🔐 **Sessions Table**
-
-```sql
-sid       VARCHAR    PK
-sess      JSONB      (session data)
-expire    TIMESTAMP  (auto cleanup)
-```
+- **認証不要**: ユーザー管理なしのシンプルな構成
+- **ローカル保存**: すべてのデータはローカルSQLiteに保存
+- **高速アクセス**: 軽量なSQLiteで瞬時にデータアクセス
 
 ## 🔌 API エンドポイント
-
-### 🔐 **Authentication API**
-
-```http
-GET    /api/auth/user        # 現在のユーザー情報
-POST   /api/auth/register    # 新規ユーザー登録
-POST   /api/auth/local-login # ローカルログイン
-GET    /api/login            # Replitログイン開始
-GET    /api/logout           # ログアウト
-```
 
 ### ✅ **Task Management API**
 
@@ -190,32 +145,27 @@ DELETE /api/tasks/:id        # タスク削除
 POST   /api/tasks/markdown   # Markdown一括作成
 ```
 
+### 🔧 **System API**
+
+```http
+GET    /api/health           # システム状態確認
+```
+
 ## 🚀 開発環境セットアップ
 
 <div align="center">
 
 ### クイックスタート
 
-![Setup](https://img.shields.io/badge/Setup-3_Steps-brightgreen?style=for-the-badge)
-![Time](https://img.shields.io/badge/Time-5_Minutes-blue?style=for-the-badge)
+![Setup](https://img.shields.io/badge/Setup-2_Steps-brightgreen?style=for-the-badge)
+![Time](https://img.shields.io/badge/Time-2_Minutes-blue?style=for-the-badge)
 
 </div>
 
 #### 📋 **前提条件**
 
 - ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js) Node.js 18 以上
-- ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=flat&logo=postgresql) PostgreSQL データベース
 - ![Git](https://img.shields.io/badge/Git-Latest-F05032?style=flat&logo=git) Git (クローン用)
-
-#### ⚙️ **環境変数設定**
-
-```bash
-DATABASE_URL=postgresql://user:pass@localhost:5432/db
-SESSION_SECRET=your-session-secret
-REPL_ID=your-repl-id
-ISSUER_URL=https://replit.com/oidc
-REPLIT_DOMAINS=your-domain.replit.app
-```
 
 #### 🏃‍♂️ **実行手順**
 
@@ -223,35 +173,43 @@ REPLIT_DOMAINS=your-domain.replit.app
 # 1️⃣ インストール
 npm install
 
-# 2️⃣ データベース初期化
-npm run db:push
-
-# 3️⃣ 開発サーバー起動
+# 2️⃣ 開発サーバー起動
 npm run dev
 open http://localhost:3001
 ```
+
+### ✨ **超簡単セットアップ**
+
+- 🚫 **データベース設定不要**: SQLiteが自動で作成されます
+- 🚫 **環境変数設定不要**: そのまま実行できます
+- 🚫 **認証設定不要**: すぐに使い始められます
 
 ---
 
 ## 🖥️ macOS アプリケーション
 
-このプロジェクトは Electron を使ってネイティブ macOS アプリとしてもビルドできます。
+このプロジェクトは **Tauri** を使ってネイティブ macOS アプリとしてビルドできます。
 
 ### 📦 **プロダクションビルド**
 
 ```bash
 # macOSアプリをビルド (.dmg)
-RUST_LOG=debug ./src-tauri/target/release/smart-task-manager
+npm run tauri:build
 ```
 
 ### ✨ **ネイティブ機能**
 
 - 🍎 **macOS 統合**: ネイティブメニューバー・ショートカット
 - 🌙 **ダークモード**: システム設定に自動対応
-- 🔒 **セキュリティ**: コンテキスト分離・権限管理
+- 🔒 **セキュリティ**: Rustベースの安全なアーキテクチャ
 - 📱 **ウィンドウ管理**: macOS ネイティブな操作感
+- 💾 **ローカルデータ**: `~/Library/Application Support/com.smarttask.manager/` に安全に保存
 
-詳細: [ELECTRON_SETUP.md](ELECTRON_SETUP.md)
+### 🎯 **Tauriの利点**
+
+- ⚡ **高速**: Rustバックエンドで軽量・高速
+- 🔐 **安全**: メモリ安全性とセキュリティを重視
+- 📦 **小サイズ**: Electronより大幅に小さいアプリサイズ
 
 ## 📁 プロジェクト構成
 
@@ -269,8 +227,11 @@ RUST_LOG=debug ./src-tauri/target/release/smart-task-manager
 ┃ ┣ 📄 index.ts                 # 🚀 Server Entry Point
 ┃ ┣ 📄 routes.ts                # 🛣️ API Routes
 ┃ ┣ 📄 storage.ts               # 💾 Data Access Layer
-┃ ┣ 📄 db.ts                    # 🗄️ Database Connection
-┃ ┗ 📄 replitAuth.ts            # 🔐 Authentication Setup
+┃ ┗ 📄 db.ts                    # 🗄️ SQLite Database Setup
+┣ 📁 src-tauri/                 # 🖥️ Tauri Desktop App
+┃ ┣ 📁 src/                     # 🦀 Rust Source Code
+┃ ┣ 📄 tauri.conf.json          # ⚙️ Tauri Configuration
+┃ ┗ 📄 Cargo.toml               # 📦 Rust Dependencies
 ┣ 📁 shared/                    # 🤝 Shared Resources
 ┃ ┗ 📄 schema.ts                # 📋 Type Definitions
 ┣ 📄 package.json               # 📦 Dependencies
@@ -285,10 +246,10 @@ RUST_LOG=debug ./src-tauri/target/release/smart-task-manager
 
 <div align="center">
 
-|  🔐 **デュアル認証**   |  ⏰ **自動完了**   |   📝 **Markdown**    | 👥 **マルチユーザー**  |
+|   💾 **オフライン**    |  ⏰ **自動完了**   |   📝 **Markdown**    |   🖥️ **ネイティブ**   |
 | :--------------------: | :----------------: | :------------------: | :--------------------: |
-| Replit & ローカル認証  |  1 時間後自動完了  | チェックボックス記法 |   独立したデータ管理   |
-| 2 つの認証方法から選択 | 集中力維持と達成感 |    使い慣れた記法    | セキュアなユーザー分離 |
+|  完全オフライン対応   |  1 時間後自動完了  | チェックボックス記法 |    Tauri macOSアプリ    |
+| インターネット接続不要 | 集中力維持と達成感 |    使い慣れた記法    |   軽量・高速・安全     |
 
 </div>
 

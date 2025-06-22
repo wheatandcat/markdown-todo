@@ -1,28 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import type { Task, InsertTask, UpdateTask } from "@shared/schema";
-import { extractTasksFromMarkdown } from "@/lib/markdown-parser";
 
 export function useTasks() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-
-  const handleUnauthorizedError = (error: Error) => {
-    if (isUnauthorizedError(error)) {
-      toast({
-        title: "認証エラー",
-        description: "ログアウトされました。再度ログインします...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return true;
-    }
-    return false;
-  };
 
   const activeTasks = useQuery<Task[]>({
     queryKey: ["/api/tasks/active"],
@@ -51,7 +34,7 @@ export function useTasks() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
     },
     onError: (error) => {
-      handleUnauthorizedError(error);
+      console.error("Task operation failed:", error);
     },
   });
 
@@ -67,7 +50,7 @@ export function useTasks() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
     },
     onError: (error) => {
-      handleUnauthorizedError(error);
+      console.error("Task operation failed:", error);
     },
   });
 
@@ -82,7 +65,7 @@ export function useTasks() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
     },
     onError: (error) => {
-      handleUnauthorizedError(error);
+      console.error("Task operation failed:", error);
     },
   });
 
@@ -100,7 +83,7 @@ export function useTasks() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/timers"] });
     },
     onError: (error) => {
-      handleUnauthorizedError(error);
+      console.error("Task operation failed:", error);
     },
   });
 

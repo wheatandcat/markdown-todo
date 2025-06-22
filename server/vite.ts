@@ -23,7 +23,6 @@ export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
-    allowedHosts: true,
   };
 
   const vite = await createViteServer({
@@ -68,9 +67,29 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  const isTauriEnv = process.env.TAURI_ENV === "true";
+  
+  let distPath: string;
+  
+  if (isTauriEnv) {
+    // Tauri環境では、サーバーファイルの隣にpublicディレクトリがある
+    distPath = path.resolve(import.meta.dirname, "public");
+  } else {
+    // 通常の環境
+    distPath = path.resolve(import.meta.dirname, "public");
+  }
+  
+  console.log(`Looking for static files at: ${distPath}`);
 
   if (!fs.existsSync(distPath)) {
+    console.error(`Static directory not found: ${distPath}`);
+    console.log('Available files in current directory:');
+    try {
+      const files = fs.readdirSync(import.meta.dirname);
+      console.log(files);
+    } catch (e) {
+      console.error('Could not list current directory:', e);
+    }
     throw new Error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`,
     );
