@@ -92,12 +92,27 @@ fn start_server_with_app_handle(is_dev: bool, app_handle: &tauri::AppHandle) -> 
             info!("{}", message);
             log_to_file(&message);
             
-            let server_file = resource_path.join("index.js");
-            let message = format!("Looking for server file: {:?}", server_file);
-            info!("{}", message);
-            log_to_file(&message);
+            // Try multiple possible paths for the server file
+            let server_paths = [
+                resource_path.join("index.js"),
+                resource_path.join("_up_").join("dist").join("index.js"),
+                resource_path.join("dist").join("index.js"),
+            ];
             
-            if server_file.exists() {
+            let mut server_file_found: Option<std::path::PathBuf> = None;
+            
+            for path in &server_paths {
+                let message = format!("Checking server file path: {:?}", path);
+                info!("{}", message);
+                log_to_file(&message);
+                
+                if path.exists() {
+                    server_file_found = Some(path.clone());
+                    break;
+                }
+            }
+            
+            if let Some(server_file) = server_file_found {
                 let message = format!("Server file found! Starting server from: {:?}", server_file);
                 info!("{}", message);
                 log_to_file(&message);
@@ -137,7 +152,7 @@ fn start_server_with_app_handle(is_dev: bool, app_handle: &tauri::AppHandle) -> 
                     }
                 }
             } else {
-                let message = "Server file (index.js) not found in resources";
+                let message = "Server file not found in any of the expected resource paths";
                 error!("{}", message);
                 log_to_file(message);
             }

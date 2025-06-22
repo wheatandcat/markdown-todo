@@ -8,3 +8,4 @@ dist-electron
 .env
 .env_copy
 create-rounded-icon.sh
+tasks.db
