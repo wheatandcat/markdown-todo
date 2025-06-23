@@ -109,6 +109,13 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
         checkedAt: Date.now(),
       });
     }
+
+    // Auto-delete completed task from markdown after a short delay
+    if (checked) {
+      setTimeout(() => {
+        removeTaskFromMarkdown(taskText);
+      }, 1000); // 1 second delay to show completion state briefly
+    }
   };
 
   const updateMarkdownContent = (taskText: string, checked: boolean) => {
@@ -122,6 +129,20 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
         return `${indent}[${checkbox}]${spacing}${taskText}`;
       }
       return line;
+    });
+    
+    onMarkdownUpdate(updatedLines.join('\n'));
+  };
+
+  const removeTaskFromMarkdown = (taskText: string) => {
+    const lines = content.split('\n');
+    const updatedLines = lines.filter(line => {
+      const taskMatch = line.match(/^(\s*-\s*)\[([x\s])\](\s*)(.+)$/);
+      // Remove line if it matches the completed task
+      if (taskMatch && taskMatch[4].trim() === taskText) {
+        return false;
+      }
+      return true;
     });
     
     onMarkdownUpdate(updatedLines.join('\n'));
