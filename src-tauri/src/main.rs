@@ -117,14 +117,38 @@ fn start_server_with_app_handle(is_dev: bool, app_handle: &tauri::AppHandle) -> 
                 info!("{}", message);
                 log_to_file(&message);
                 
-                match Command::new("node")
-                    .arg(&server_file)
-                    .env("NODE_ENV", "production")
-                    .env("PORT", PROD_PORT.to_string())
-                    .env("TAURI_ENV", "true")
-                    .spawn() {
+                // Try to find node binary in common locations
+                // Start with system PATH first to get compatible version
+                let node_paths = [
+                    "node", // Try system PATH first (usually more compatible)
+                    "/usr/local/bin/node",
+                    "/usr/bin/node",
+                    "/opt/homebrew/bin/node", // Last resort as it might be newer
+                ];
+                
+                let mut node_command = None;
+                for node_path in &node_paths {
+                    if std::path::Path::new(node_path).exists() || *node_path == "node" {
+                        node_command = Some(*node_path);
+                        break;
+                    }
+                }
+                
+                if let Some(node_cmd) = node_command {
+                    let message = format!("Using Node.js from: {}", node_cmd);
+                    info!("{}", message);
+                    log_to_file(&message);
+                    
+                    match Command::new(node_cmd)
+                        .arg(&server_file)
+                        .env("NODE_ENV", "production")
+                        .env("PORT", PROD_PORT.to_string())
+                        .env("TAURI_ENV", "true")
+                        .stdout(std::process::Stdio::null())
+                        .stderr(std::process::Stdio::null())
+                        .spawn() {
                     Ok(child) => {
-                        let message = format!("Node.js process started with PID: {:?}", child.id());
+                        let message = format!("Server process started with PID: {:?}", child.id());
                         info!("{}", message);
                         log_to_file(&message);
                         
@@ -146,10 +170,15 @@ fn start_server_with_app_handle(is_dev: bool, app_handle: &tauri::AppHandle) -> 
                         }
                     },
                     Err(e) => {
-                        let message = format!("Failed to start Node.js process: {}", e);
+                        let message = format!("Failed to start server process: {}", e);
                         error!("{}", message);
                         log_to_file(&message);
                     }
+                }
+                } else {
+                    let message = "Node.js not found in any common location";
+                    error!("{}", message);
+                    log_to_file(message);
                 }
             } else {
                 let message = "Server file not found in any of the expected resource paths";
@@ -197,14 +226,33 @@ fn start_server_fallback() -> Result<Option<Child>, Box<dyn std::error::Error>> 
             info!("{}", message);
             log_to_file(&message);
             
-            match Command::new("node")
-                .arg(path)
-                .env("NODE_ENV", "production")
-                .env("PORT", PROD_PORT.to_string())
-                .env("TAURI_ENV", "true")
-                .spawn() {
+            // Try to find node binary for fallback
+            let node_paths = [
+                "node", // Try system PATH first (usually more compatible)
+                "/usr/local/bin/node",
+                "/usr/bin/node",
+                "/opt/homebrew/bin/node", // Last resort as it might be newer
+            ];
+            
+            let mut node_command = None;
+            for node_path in &node_paths {
+                if std::path::Path::new(node_path).exists() || *node_path == "node" {
+                    node_command = Some(*node_path);
+                    break;
+                }
+            }
+            
+            if let Some(node_cmd) = node_command {
+                match Command::new(node_cmd)
+                    .arg(path)
+                    .env("NODE_ENV", "production")
+                    .env("PORT", PROD_PORT.to_string())
+                    .env("TAURI_ENV", "true")
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
+                    .spawn() {
                 Ok(child) => {
-                    let message = format!("Node.js process started from {} with PID: {:?}", path, child.id());
+                    let message = format!("Server process started from {} with PID: {:?}", path, child.id());
                     info!("{}", message);
                     log_to_file(&message);
                     
@@ -230,6 +278,11 @@ fn start_server_fallback() -> Result<Option<Child>, Box<dyn std::error::Error>> 
                     error!("{}", message);
                     log_to_file(&message);
                 }
+            }
+            } else {
+                let message = "Node.js not found for fallback server startup";
+                error!("{}", message);
+                log_to_file(message);
             }
         } else {
             let message = format!("Path does not exist: {}", path);

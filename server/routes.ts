@@ -3,18 +3,81 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
 import { z } from "zod";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
   // Environment check endpoint
-  app.get('/api/health', (req, res) => {
-    res.json({ 
-      status: 'ok',
-      environment: process.env.NODE_ENV,
-      tauri: process.env.TAURI_ENV === "true",
-      timestamp: new Date().toISOString()
-    });
+  app.get('/api/health', async (req, res) => {
+    try {
+      const timerTasks = await storage.getTimerTasks();
+      res.json({ 
+        status: 'ok',
+        environment: process.env.NODE_ENV,
+        tauri: process.env.TAURI_ENV === "true",
+        timestamp: new Date().toISOString(),
+        timerTasksCount: timerTasks.length,
+        timerTasks: timerTasks.map(task => ({
+          id: task.id,
+          text: task.text,
+          checkedAt: task.checkedAt,
+          timeRemaining: task.checkedAt ? Math.max(0, (60 * 60 * 1000) - (Date.now() - task.checkedAt)) : 0
+        }))
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        status: 'error',
+        environment: process.env.NODE_ENV,
+        tauri: process.env.TAURI_ENV === "true",
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   });
+
+  // Debug logs endpoint
+  app.get('/api/debug/logs', (req, res) => {
+    try {
+      const isTauri = process.env.TAURI_ENV === "true";
+      if (!isTauri) {
+        return res.json({ 
+          error: "Logs only available in Tauri environment",
+          environment: process.env.NODE_ENV 
+        });
+      }
+      
+      const homeDir = os.homedir();
+      const logFile = path.join(homeDir, "Library", "Logs", "SmartTaskManager", "server.log");
+      
+      if (!fs.existsSync(logFile)) {
+        return res.json({ 
+          error: "Log file not found",
+          path: logFile 
+        });
+      }
+      
+      // 最新の100行を取得
+      const logContent = fs.readFileSync(logFile, 'utf-8');
+      const lines = logContent.split('\n').filter(line => line.trim());
+      const recentLines = lines.slice(-100); // 最新100行
+      
+      res.json({
+        status: 'ok',
+        logFile,
+        lineCount: lines.length,
+        recentLines,
+        lastModified: fs.statSync(logFile).mtime
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Get all tasks
   app.get("/api/tasks", async (req, res) => {
     try {
@@ -172,18 +235,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
+  // Timer initialization log
+  console.log(`[TIMER INIT] Starting timer interval (every 30 seconds) at ${new Date().toISOString()}`);
+  console.log(`[TIMER INIT] Environment: NODE_ENV=${process.env.NODE_ENV}, TAURI_ENV=${process.env.TAURI_ENV}`);
+  
   // Auto-complete timer tasks
   setInterval(async () => {
     try {
       const now = Date.now();
       const TIMER_DURATION = 60 * 60 * 1000; // 1 hour
       
+      console.log(`[Timer Check] Running timer check at ${new Date().toISOString()}`);
+      
       const timerTasks = await storage.getTimerTasks();
+      console.log(`[Timer Check] Found ${timerTasks.length} timer tasks`);
       
       for (const task of timerTasks) {
         if (task.checkedAt && !task.completedAt) {
           const timeElapsed = now - task.checkedAt;
+          const remainingTime = TIMER_DURATION - timeElapsed;
+          
+          console.log(`[Timer Check] Task "${task.text}": ${Math.round(remainingTime / 1000 / 60)}min remaining`);
+          
           if (timeElapsed >= TIMER_DURATION) {
+            console.log(`[Timer Complete] Auto-completing task: "${task.text}"`);
             await storage.updateTask(task.id, {
               completedAt: now,
             });

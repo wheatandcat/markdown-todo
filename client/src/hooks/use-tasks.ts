@@ -20,6 +20,14 @@ export function useTasks() {
   const timerTasks = useQuery<Task[]>({
     queryKey: ["/api/tasks/timers"],
     retry: false,
+    staleTime: 5000, // 5秒間はキャッシュを使用
+    refetchInterval: 5000, // 5秒間隔で自動更新
+    onSuccess: (data) => {
+      console.log(`[Client Timer Tasks] Fetched ${data?.length || 0} timer tasks`, data);
+    },
+    onError: (error) => {
+      console.error(`[Client Timer Tasks] Error fetching timer tasks:`, error);
+    }
   });
 
   const createTask = useMutation({
