@@ -5,7 +5,7 @@ import {
   type UpdateTask,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, isNotNull, isNull } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -82,12 +82,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTimerTasks(): Promise<Task[]> {
+    // タイマー中のタスク: completed=true、checkedAtがあり、completedAtがない
     const result = await db
       .select()
       .from(tasks)
-      .where(eq(tasks.completed, true))
+      .where(
+        and(
+          eq(tasks.completed, true),
+          isNotNull(tasks.checkedAt),
+          isNull(tasks.completedAt)
+        )
+      )
       .orderBy(tasks.checkedAt);
-    return result.filter(task => task.checkedAt && !task.completedAt);
+    return result;
   }
 }
 

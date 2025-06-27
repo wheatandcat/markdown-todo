@@ -6,6 +6,7 @@ import { QuickAddModal } from "@/components/quick-add-modal";
 import { CompletedTasksView } from "@/components/completed-tasks-view";
 import { TimerTasksView } from "@/components/timer-tasks-view";
 import { StatsView } from "@/components/stats-view";
+import { DebugPanel } from "@/components/debug-panel";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useTasks } from "@/hooks/use-tasks";
@@ -209,6 +210,9 @@ export default function Home() {
           localStorage.setItem("markdownContent", newContent);
         }}
       />
+
+      {/* Debug Panel */}
+      <DebugPanel />
     </div>
   );
 }

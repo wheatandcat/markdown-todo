@@ -38,14 +38,21 @@ export function useTimers() {
   }, [timerTasks.data, updateTask]);
 
   const getTimerProgress = (taskId: number): number | null => {
-    if (!timerTasks.data) return null;
+    if (!timerTasks.data) {
+      console.log(`[Timer Progress] No timer data available for task ${taskId}`);
+      return null;
+    }
     
     const task = timerTasks.data.find(t => t.id === taskId);
-    if (!task || !task.checkedAt || task.completedAt) return null;
+    if (!task || !task.checkedAt || task.completedAt) {
+      console.log(`[Timer Progress] Task ${taskId} not found or not in timer state`, { task });
+      return null;
+    }
 
     const timeElapsed = Date.now() - task.checkedAt;
     const progress = Math.min((timeElapsed / TIMER_DURATION) * 100, 100);
     
+    console.log(`[Timer Progress] Task ${taskId} (${task.text}): ${progress.toFixed(1)}% complete`);
     return progress;
   };
 

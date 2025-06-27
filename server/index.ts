@@ -1,8 +1,55 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 const app = express();
+
+// ログファイル設定
+const setupLogFile = () => {
+  const isTauri = process.env.TAURI_ENV === "true";
+  if (isTauri) {
+    const homeDir = os.homedir();
+    const logDir = path.join(homeDir, "Library", "Logs", "SmartTaskManager");
+    
+    try {
+      if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+      }
+      
+      const logFile = path.join(logDir, "server.log");
+      const logStream = fs.createWriteStream(logFile, { flags: 'a' });
+      
+      // コンソールログをファイルにも出力
+      const originalLog = console.log;
+      const originalError = console.error;
+      
+      console.log = (...args) => {
+        const timestamp = new Date().toISOString();
+        const message = `[${timestamp}] ${args.join(' ')}\n`;
+        logStream.write(message);
+        originalLog(...args);
+      };
+      
+      console.error = (...args) => {
+        const timestamp = new Date().toISOString();
+        const message = `[${timestamp}] ERROR: ${args.join(' ')}\n`;
+        logStream.write(message);
+        originalError(...args);
+      };
+      
+      console.log(`[LOG SETUP] Log file created at: ${logFile}`);
+      return logFile;
+    } catch (error) {
+      console.error(`[LOG SETUP] Failed to setup log file:`, error);
+    }
+  }
+  return null;
+};
+
+const logFilePath = setupLogFile();
 
 // CORS設定 - Tauri環境とローカル開発対応
 const isTauriEnv = process.env.TAURI_ENV === "true";
