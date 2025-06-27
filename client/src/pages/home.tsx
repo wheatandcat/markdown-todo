@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { TaskPreview } from "@/components/task-preview";
@@ -12,8 +12,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { Menu, Plus, Save, Download } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-export default function Home() {
-  const [markdownContent, setMarkdownContent] = useState(`## 今日のタスク
+const defaultMarkdown = `## 今日のタスク
 
 - [ ] プロジェクトの設計書を作成する
 - [ ] Tauri 2.0の新機能を調査する  
@@ -28,7 +27,10 @@ export default function Home() {
 ## メモ
 
 Markdownのチェックボックス記法を使ってタスクを作成できます。
-チェックすると1時間後に自動で完了扱いになります。`);
+チェックすると1時間後に自動で完了扱いになります。`;
+
+export default function Home() {
+  const [markdownContent, setMarkdownContent] = useState(defaultMarkdown);
 
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -36,6 +38,14 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
   const { toast } = useToast();
   const { syncMarkdownTasks } = useTasks();
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ページロード時にlocalStorageからMarkdownコンテンツを復元
+  useEffect(() => {
+    const savedContent = localStorage.getItem("markdownContent");
+    if (savedContent) {
+      setMarkdownContent(savedContent);
+    }
+  }, []);
 
   const handleSave = () => {
     localStorage.setItem("markdownContent", markdownContent);
@@ -61,6 +71,10 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
 
   const handleMarkdownChange = (content: string) => {
     setMarkdownContent(content);
+    
+    // Auto-save to localStorage with debounce
+    localStorage.setItem("markdownContent", content);
+    
     // Debounce the sync to avoid multiple API calls
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current);
@@ -72,7 +86,14 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
 
   const insertTaskTemplate = () => {
     const template = "\n- [ ] 新しいタスク\n";
-    setMarkdownContent(prev => prev + template);
+    const newContent = markdownContent + template;
+    setMarkdownContent(newContent);
+    localStorage.setItem("markdownContent", newContent);
+  };
+
+  const handleMarkdownUpdate = (content: string) => {
+    setMarkdownContent(content);
+    localStorage.setItem("markdownContent", content);
   };
 
   return (
@@ -146,7 +167,7 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
               <div className="flex-1 min-h-0 md:min-h-full border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700">
                 <TaskPreview 
                   content={markdownContent} 
-                  onMarkdownUpdate={setMarkdownContent}
+                  onMarkdownUpdate={handleMarkdownUpdate}
                 />
               </div>
             </>
@@ -183,7 +204,9 @@ Markdownのチェックボックス記法を使ってタスクを作成できま
         onOpenChange={setShowQuickAdd}
         onAddTask={(task) => {
           const newTask = `\n- [ ] ${task}`;
-          setMarkdownContent(prev => prev + newTask);
+          const newContent = markdownContent + newTask;
+          setMarkdownContent(newContent);
+          localStorage.setItem("markdownContent", newContent);
         }}
       />
     </div>

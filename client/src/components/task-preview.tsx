@@ -26,15 +26,11 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
     setParsedContent(parsed);
   }, [content]);
 
-  // Initial timer state synchronization on component mount
+  // Only run timer state synchronization after user interactions, not on initial load
   useEffect(() => {
-    if (activeTasks.data || completedTasks.data) {
-      updateMarkdownForTimerStates();
-    }
-  }, [activeTasks.isSuccess, completedTasks.isSuccess]);
-
-  // Debounced timer state synchronization - only run if no recent user interaction
-  useEffect(() => {
+    // Don't run if this is the initial load (lastUserAction is 0)
+    if (lastUserAction === 0) return;
+    
     const timeSinceLastAction = Date.now() - lastUserAction;
     if (timeSinceLastAction > 2000 && (activeTasks.data || completedTasks.data)) {
       const timer = setTimeout(() => {
@@ -45,7 +41,9 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
   }, [activeTasks.data, completedTasks.data, lastUserAction]);
 
   const updateMarkdownForTimerStates = () => {
+    // Prevent unnecessary updates if data is not available or no user interaction occurred
     if (!activeTasks.data && !completedTasks.data) return;
+    if (lastUserAction === 0) return; // Skip during initial load
     
     const allTasks = [...(activeTasks.data || []), ...(completedTasks.data || [])];
     const lines = content.split('\n');
@@ -59,8 +57,8 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
         const timerProgress = existingTask ? getTimerProgress(existingTask.id) : null;
         const hasTimer = timerProgress !== null;
         
-        if (hasTimer && taskMatch[2] !== 'x') {
-          // Task has timer but markdown shows unchecked - update it
+        // Only update if there's a clear timer state mismatch and sufficient time has passed since user action
+        if (hasTimer && taskMatch[2] !== 'x' && (Date.now() - lastUserAction) > 3000) {
           hasChanges = true;
           const indent = taskMatch[1];
           const spacing = taskMatch[3];
@@ -110,12 +108,6 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
       });
     }
 
-    // Auto-delete completed task from markdown after a short delay
-    if (checked) {
-      setTimeout(() => {
-        removeTaskFromMarkdown(taskText);
-      }, 1000); // 1 second delay to show completion state briefly
-    }
   };
 
   const updateMarkdownContent = (taskText: string, checked: boolean) => {
@@ -177,8 +169,8 @@ export function TaskPreview({ content, onMarkdownUpdate }: TaskPreviewProps) {
       const timerProgress = existingTask ? getTimerProgress(existingTask.id) : null;
       const hasTimer = timerProgress !== null;
       
-      // Always use database state as source of truth to prevent flickering
-      const actualCompleted = hasTimer ? true : (existingTask ? existingTask.completed : item.completed);
+      // Use database state as primary source, fall back to markdown state only if no database entry
+      const actualCompleted = existingTask ? (hasTimer || existingTask.completed) : item.completed;
 
       return (
         <Card
